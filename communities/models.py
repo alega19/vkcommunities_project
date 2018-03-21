@@ -16,12 +16,12 @@ class Community(models.Model):
     )
 
     AGELIMIT_UNKNOWN = -1
-    AGELIMIT_NO = 0
+    AGELIMIT_NONE = 0
     AGELIMIT_16 = 16
     AGELIMIT_18 = 18
     _AGELIMIT_CHOICES = (
         (AGELIMIT_UNKNOWN, 'Unknown'),
-        (AGELIMIT_NO, 'No'),
+        (AGELIMIT_NONE, 'None'),
         (AGELIMIT_16, '16+'),
         (AGELIMIT_18, '18+')
     )
