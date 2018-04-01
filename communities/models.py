@@ -37,6 +37,7 @@ class Community(models.Model):
     status = models.TextField(blank=True)
     icon50url = models.TextField(blank=True)
     icon100url = models.TextField(blank=True)
+    checked_at = models.DateTimeField(blank=True, null=True)
     posts_per_week = models.PositiveSmallIntegerField(blank=True, null=True)
     views_per_post = models.FloatField(blank=True, null=True)
     likes_per_view = models.FloatField(blank=True, null=True)
