@@ -4,6 +4,7 @@ import time
 from datetime import timedelta as TimeDelta
 from threading import RLock
 from urllib.error import URLError
+from urllib.parse import urlencode
 from urllib.request import urlopen
 
 from django.utils import timezone
@@ -124,6 +125,8 @@ class VkApi:
         return posts
 
     def _request(self, method, **params):
+        params = urlencode(params)
+        params = params.encode('ascii')
         try:
             resp = urlopen('https://api.vk.com/method/' + method, data=params, timeout=HTTP_REQUEST_TIMEOUT)
             data = resp.read()
