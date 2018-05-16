@@ -117,7 +117,7 @@ class VkApi:
         if results is None:
             err = VkApiResponseError.from_response(response)
             logger.warning('%s (community=%s, token=%s)', repr(err), id_, token.key)
-            if err.code == 15:  # a closed group
+            if err.code in (15, 18):  # ether there is no access or no content
                 return None
             raise TryAgain()
 
