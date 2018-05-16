@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta as TimeDelta
 from threading import Thread, Event
 
+from django.db import transaction
 from django.utils import timezone
 
 from communities.models import Community
@@ -51,8 +52,7 @@ class CommunitiesUpdater(Thread):
 
     def _sleep_until_check_begins(self):
         last_check_time = self._communities_buffer[0].checked_at
-        if last_check_time is None or \
-                self._communities_buffer[-1].checked_at is None:  # because ORM cannot use 'NULLS FIRST'
+        if last_check_time is None:
             return
         next_check_time = last_check_time + COMMUNITY_UPDATE_PERIOD
         delay = (next_check_time - timezone.now()).total_seconds()
@@ -141,8 +141,16 @@ class CommunitiesUpdater(Thread):
             return Community.AGELIMIT_18
         raise VkApiParsingError('unexpected value of a parameter age_limits = {0}'.format(age_limits))
 
+    @transaction.atomic
     def _load_communities(self):
-        communities = Community.objects.order_by('checked_at')[:COMMUNITIES_BUFFER_MAX_LENGTH]
+        communities = Community.objects.filter(checked_at__isnull=True)[:COMMUNITIES_BUFFER_MAX_LENGTH]
         self._communities_buffer = list(communities)
+        if len(self._communities_buffer) < COMMUNITIES_BUFFER_MAX_LENGTH:
+            communities = Community.objects.filter(
+                checked_at__isnull=False
+            ).order_by(
+                'checked_at'
+            )[:COMMUNITIES_BUFFER_MAX_LENGTH - len(self._communities_buffer)]
+            self._communities_buffer.extend(communities)
         if not self._communities_buffer:
             raise RuntimeError('no communities in the database')
