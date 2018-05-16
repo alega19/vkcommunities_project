@@ -83,7 +83,7 @@ class VkApi:
             group_ids=','.join(str(id_) for id_ in ids),
             fields='type,is_closed,verified,age_limits,name,description,members_count,status',
             access_token=token.key,
-            v='5.73')
+            v='5.74')
         communities = response.get('response')
 
         if communities is None:
@@ -111,12 +111,14 @@ class VkApi:
             count='100',
             filter='all',
             access_token=token.key,
-            v='5.73')
+            v='5.74')
         results = response.get('response')
 
         if results is None:
             err = VkApiResponseError.from_response(response)
             logger.warning('%s with the token %s', repr(err), token.key)
+            if err.code == 15:  # a closed group
+                return None
             raise TryAgain()
 
         posts = results['items']
