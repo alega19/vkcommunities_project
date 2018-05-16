@@ -49,3 +49,9 @@ class CommunityHistory(models.Model):
     community = models.ForeignKey('Community', on_delete=models.CASCADE)
     changed_at = models.DateTimeField(default=timezone.now)
     followers = models.PositiveIntegerField()
+
+
+class WallCheckingLog(models.Model):
+    community = models.ForeignKey('Community', on_delete=models.CASCADE)
+    checked_at = models.DateTimeField()
+    oldest_post_date = models.DateTimeField(blank=True, null=True)
