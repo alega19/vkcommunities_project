@@ -1,17 +1,20 @@
 import logging
+from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from threading import Thread, Event
 
 from django.db import transaction
 from django.utils import timezone
 
-from communities.models import Community, WallCheckingLog
+import pytz
+
+from communities.models import Community, WallCheckingLog, Post
 from datacollector.vkapi import REQUEST_DELAY_PER_TOKEN_FOR_WALL, TryAgain
 
 
 WALL_UPDATE_PERIOD = 23 * 3600
 DEFAULT_UPDATE_DURATION = REQUEST_DELAY_PER_TOKEN_FOR_WALL
-MIN_PERIOD_FOR_STATS = TimeDelta(seconds=120)
+MIN_PERIOD_FOR_STATS = TimeDelta(seconds=300)
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +29,6 @@ class WallUpdater(Thread):
         self._period_start = None
         self._updated_walls = 0
         self._communities = []  # the last element is first in queue (has a higher priority)
-        self._check_time = None
 
     def stop(self):
         self._stop_event.set()
@@ -56,12 +58,48 @@ class WallUpdater(Thread):
         check_time = timezone.now()
         posts = self._vkapi.get_community_wall(comm.vkid)
         self._communities.pop()
-        if posts is None:
-            logger.info('cannot get the wall of the community(id=%s)', comm.vkid)
-            return
-        print(comm.vkid, 'OK:', len(posts))
-        WallCheckingLog.objects.create(community=comm, checked_at=check_time)
+        if comm.wall_checked_at is not None and\
+                comm.wall_checked_at + TimeDelta(seconds=WALL_UPDATE_PERIOD) < check_time:
+            logger.warning(
+                'updating the community(id=%s) is %s seconds late',
+                comm.vkid,
+                (check_time - comm.wall_checked_at + TimeDelta(seconds=WALL_UPDATE_PERIOD)).total_seconds())
+
+        oldest_post_date = None
+        with transaction.atomic():
+            if posts is None:
+                logger.warning('cannot get the wall of the community(id=%s)', comm.vkid)
+            elif posts:
+                logger.info('got %s posts for the community(id=%s)', len(posts), comm.vkid)
+                oldest_post_timestamp = posts[0]['date']
+                for p in posts:
+                    oldest_post_timestamp = min(oldest_post_timestamp, p['date'])
+                    self._save_post(comm, p)
+                oldest_post_date = pytz.utc.localize(DateTime.utcfromtimestamp(oldest_post_timestamp))
+            WallCheckingLog.objects.create(community=comm, checked_at=check_time, oldest_post_date=oldest_post_date)
         self._updated_walls += 1
+
+    @staticmethod
+    def _save_post(comm, data):
+        content = [data['text']]
+        content.extend(p['text'] for p in data.get('copy_history', []))
+
+        if 'views' in data:
+            views = data['views']['count']
+        else:
+            views = None
+
+        Post(
+            community=comm,
+            vkid=data['id'],
+            published_at=pytz.utc.localize(DateTime.utcfromtimestamp(data['date'])),
+            content=content,
+            views=views,
+            likes=data['likes']['count'],
+            shares=data['reposts']['count'],
+            comments=data['comments']['count'],
+            marked_as_ads=data['marked_as_ads'] == 1
+        ).save()
 
     def _load_communities(self):
         if self._updated_walls == 0:
@@ -73,7 +111,7 @@ class WallUpdater(Thread):
         self._updated_walls = 0
 
         num = int(WALL_UPDATE_PERIOD / update_duration)
-        print(num, update_duration)
+        logger.info('loaded %s communities, %s seconds per each one', num, update_duration)
         with transaction.atomic():
             communities = Community.objects.filter(
                 deactivated=False,
@@ -97,9 +135,9 @@ class WallUpdater(Thread):
         for c in communities:
             c.wall_checked_at = last_wall_checks.get(c.vkid)
 
-        now = timezone.now()
+        y1970 = pytz.utc.localize(DateTime.utcfromtimestamp(0))
         self._communities = sorted(
             communities,
-            key=lambda c: c.wall_checked_at or now,  # new communities have the lowest priority
+            key=lambda c: c.wall_checked_at or y1970,  # new communities have the highest priority
             reverse=True
         )

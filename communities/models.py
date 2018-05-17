@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.postgres.fields import JSONField
 
 
 class Community(models.Model):
@@ -55,3 +56,20 @@ class WallCheckingLog(models.Model):
     community = models.ForeignKey('Community', on_delete=models.CASCADE)
     checked_at = models.DateTimeField()
     oldest_post_date = models.DateTimeField(blank=True, null=True)
+
+
+class Post(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    community = models.ForeignKey('Community', on_delete=models.CASCADE)
+    vkid = models.PositiveIntegerField()
+    published_at = models.DateTimeField()
+    content = JSONField()
+    views = models.PositiveIntegerField(blank=True, null=True)
+    likes = models.PositiveIntegerField()
+    shares = models.PositiveIntegerField()
+    comments = models.PositiveIntegerField()
+    marked_as_ads = models.BooleanField()
+
+    def save(self, *args, **kwargs):
+        self.id = self.community_id * 2147483648 + self.vkid
+        super().save(*args, **kwargs)
