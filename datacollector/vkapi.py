@@ -88,7 +88,7 @@ class VkApi:
 
         if communities is None:
             err = VkApiResponseError.from_response(response)
-            logger.warning('%s with the token %s', repr(err), token.key)
+            logger.warning('%s, token=%s', repr(err), token.key)
             raise TryAgain()
 
         return communities
@@ -116,14 +116,14 @@ class VkApi:
 
         if results is None:
             err = VkApiResponseError.from_response(response)
-            logger.warning('%s (community=%s, token=%s)', repr(err), id_, token.key)
+            logger.warning('%s, community(id=%s), token=%s', repr(err), id_, token.key)
             if err.code in (15, 18):  # ether there is no access or no content
                 return None
             raise TryAgain()
 
         posts = results['items']
         if not posts:
-            logger.warning('got an empty wall for the community=%s', id_)
+            logger.warning('got an empty wall for the community(id=%s)', id_)
         return posts
 
     def _request(self, method, **params):
