@@ -46,6 +46,7 @@ class Community(models.Model):
 
 
 class CommunityHistory(models.Model):
+    id = models.BigAutoField(primary_key=True)
     community = models.ForeignKey('Community', on_delete=models.CASCADE)
-    changed_at = models.DateTimeField(default=timezone.now)
+    checked_at = models.DateTimeField()
     followers = models.PositiveIntegerField()

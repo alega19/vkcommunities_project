@@ -5,7 +5,7 @@ from threading import Thread, Event
 from django.db import transaction
 from django.utils import timezone
 
-from communities.models import Community
+from communities.models import Community, CommunityHistory
 from datacollector.vkapi import COMMUNITIES_PER_REQUEST, TryAgain
 
 
@@ -81,18 +81,34 @@ class CommunitiesUpdater(Thread):
         return items
 
     def _update_community(self, comm, data):
+        followers = data.get('members_count')
+
         comm.deactivated = self._parse_deactivated(data)
         comm.ctype = self._parse_type(data)
         comm.verified = self._parse_verified(data)
         comm.age_limit = self._parse_age_limit(data)
         comm.name = data.get('name', '')
         comm.description = data.get('description', '')
-        comm.followers = data.get('members_count')
+        comm.followers = followers
         comm.status = data.get('status', '')
         comm.icon50url = data.get('photo_50', '')
         comm.icon100url = data.get('photo_100', '')
         comm.checked_at = self._check_time
-        comm.save()
+
+        if followers is None:
+            comm.save()
+        else:
+            self._save_with_history(comm)
+
+    def _save_with_history(self, comm):
+        current = CommunityHistory(
+            community=comm,
+            checked_at=self._check_time,
+            followers=comm.followers
+        )
+        with transaction.atomic():
+            comm.save()
+            current.save()
 
     @staticmethod
     def _parse_deactivated(data):
