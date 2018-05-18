@@ -57,7 +57,7 @@ class CommunitiesUpdater(Thread):
         next_check_time = last_check_time + COMMUNITY_UPDATE_PERIOD
         delay = (next_check_time - timezone.now()).total_seconds()
         if delay < 0:
-            logger.warning('CommunitiesUpdater is %s seconds late', -delay)
+            logger.warning('updating is %s seconds late', -delay)
         elif delay > 0:
             self._sleep(delay)
 
@@ -71,7 +71,7 @@ class CommunitiesUpdater(Thread):
         for comm in communities:
             data = vkid2data.get(comm.vkid)
             self._update_community(comm, data)
-            logger.info('community(id=%s) has been updated', comm.vkid)
+            logger.info('community(id=%s) updated', comm.vkid)
         self._communities_buffer = self._communities_buffer[COMMUNITIES_PER_REQUEST:]
 
     def _request(self, communities):
