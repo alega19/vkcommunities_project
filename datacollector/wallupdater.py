@@ -116,11 +116,11 @@ class WallUpdater(Thread):
             communities = Community.objects.filter(
                 deactivated=False,
                 ctype__in=(Community.TYPE_PUBLIC_PAGE, Community.TYPE_OPEN_GROUP),
-                followers__isnull=False,
+                followers__isnull=False
             ).order_by(
                 '-followers'
             ).only(
-                'vkid'
+                'followers'
             )[:num]
 
             last_wall_checks = WallCheckingLog.objects.order_by(
@@ -135,9 +135,15 @@ class WallUpdater(Thread):
         for c in communities:
             c.wall_checked_at = last_wall_checks.get(c.vkid)
 
-        y1970 = pytz.utc.localize(DateTime.utcfromtimestamp(0))
         self._communities = sorted(
             communities,
-            key=lambda c: c.wall_checked_at or y1970,  # new communities have the highest priority
-            reverse=True
+            key=self._priority_of_community
         )
+
+    @staticmethod
+    def _priority_of_community(comm):
+        if comm.wall_checked_at is None:
+            time_priority = 0  # new communities have the highest priority
+        else:
+            time_priority = -comm.wall_checked_at.timestamp()
+        return time_priority, comm.followers
