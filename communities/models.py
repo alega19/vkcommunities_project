@@ -62,6 +62,7 @@ class Post(models.Model):
     id = models.BigIntegerField(primary_key=True)
     community = models.ForeignKey('Community', on_delete=models.CASCADE)
     vkid = models.PositiveIntegerField()
+    checked_at = models.DateTimeField(blank=True, null=True)
     published_at = models.DateTimeField()
     content = JSONField()
     views = models.PositiveIntegerField(blank=True, null=True)

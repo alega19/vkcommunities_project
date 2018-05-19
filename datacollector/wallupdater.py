@@ -74,13 +74,13 @@ class WallUpdater(Thread):
                 oldest_post_timestamp = posts[0]['date']
                 for p in posts:
                     oldest_post_timestamp = min(oldest_post_timestamp, p['date'])
-                    self._save_post(comm, p)
+                    self._save_post(comm, p, check_time)
                 oldest_post_date = pytz.utc.localize(DateTime.utcfromtimestamp(oldest_post_timestamp))
             WallCheckingLog.objects.create(community=comm, checked_at=check_time, oldest_post_date=oldest_post_date)
         self._updated_walls += 1
 
     @staticmethod
-    def _save_post(comm, data):
+    def _save_post(comm, data, check_time):
         content = [data['text']]
         content.extend(p['text'] for p in data.get('copy_history', []))
 
@@ -92,6 +92,7 @@ class WallUpdater(Thread):
         Post(
             community=comm,
             vkid=data['id'],
+            checked_at=check_time,
             published_at=pytz.utc.localize(DateTime.utcfromtimestamp(data['date'])),
             content=content,
             views=views,
