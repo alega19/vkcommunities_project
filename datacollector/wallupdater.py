@@ -8,7 +8,7 @@ from django.utils import timezone
 
 import pytz
 
-from communities.models import Community, WallCheckingLog, Post
+from communities.models import Community, Post
 from datacollector.vkapi import REQUEST_DELAY_PER_TOKEN_FOR_WALL, TryAgain
 
 
@@ -65,18 +65,15 @@ class WallUpdater(Thread):
                 comm.vkid,
                 (check_time - comm.wall_checked_at + TimeDelta(seconds=WALL_UPDATE_PERIOD)).total_seconds())
 
-        oldest_post_date = None
         with transaction.atomic():
             if posts is None:
                 logger.warning('cannot get the wall of the community(id=%s)', comm.vkid)
             elif posts:
                 logger.info('got %s posts for the community(id=%s)', len(posts), comm.vkid)
-                oldest_post_timestamp = posts[0]['date']
                 for p in posts:
-                    oldest_post_timestamp = min(oldest_post_timestamp, p['date'])
                     self._save_post(comm, p, check_time)
-                oldest_post_date = pytz.utc.localize(DateTime.utcfromtimestamp(oldest_post_timestamp))
-            WallCheckingLog.objects.create(community=comm, checked_at=check_time, oldest_post_date=oldest_post_date)
+            comm.wall_checked_at = check_time
+            comm.save(update_fields=['wall_checked_at'])
         self._updated_walls += 1
 
     @staticmethod
@@ -113,28 +110,15 @@ class WallUpdater(Thread):
 
         num = int(WALL_UPDATE_PERIOD / update_duration)
         logger.info('loaded %s communities, %s seconds per each one', num, update_duration)
-        with transaction.atomic():
-            communities = Community.objects.filter(
-                deactivated=False,
-                ctype__in=(Community.TYPE_PUBLIC_PAGE, Community.TYPE_OPEN_GROUP),
-                followers__isnull=False
-            ).order_by(
-                '-followers'
-            ).only(
-                'followers'
-            )[:num]
-
-            last_wall_checks = WallCheckingLog.objects.order_by(
-                'community', '-checked_at'
-            ).distinct(
-                'community'
-            ).values_list(
-                'community', 'checked_at'
-            )
-            last_wall_checks = dict(last_wall_checks)
-
-        for c in communities:
-            c.wall_checked_at = last_wall_checks.get(c.vkid)
+        communities = Community.objects.filter(
+            deactivated=False,
+            ctype__in=(Community.TYPE_PUBLIC_PAGE, Community.TYPE_OPEN_GROUP),
+            followers__isnull=False
+        ).order_by(
+            '-followers'
+        ).only(
+            'followers', 'wall_checked_at'
+        )[:num]
 
         self._communities = sorted(
             communities,

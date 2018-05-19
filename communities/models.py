@@ -39,6 +39,7 @@ class Community(models.Model):
     icon50url = models.TextField(blank=True)
     icon100url = models.TextField(blank=True)
     checked_at = models.DateTimeField(blank=True, null=True)
+    wall_checked_at = models.DateTimeField(blank=True, null=True)
     posts_per_week = models.PositiveSmallIntegerField(blank=True, null=True)
     views_per_post = models.FloatField(blank=True, null=True)
     likes_per_view = models.FloatField(blank=True, null=True)
@@ -50,12 +51,6 @@ class CommunityHistory(models.Model):
     community = models.ForeignKey('Community', on_delete=models.CASCADE)
     changed_at = models.DateTimeField(default=timezone.now)
     followers = models.PositiveIntegerField()
-
-
-class WallCheckingLog(models.Model):
-    community = models.ForeignKey('Community', on_delete=models.CASCADE)
-    checked_at = models.DateTimeField()
-    oldest_post_date = models.DateTimeField(blank=True, null=True)
 
 
 class Post(models.Model):
