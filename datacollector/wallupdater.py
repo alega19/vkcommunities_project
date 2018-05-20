@@ -4,17 +4,23 @@ from datetime import timedelta as TimeDelta
 from threading import Thread, Event
 
 from django.db import transaction
+from django.db.models import FloatField, Count, F
+from django.db.models.functions import Cast
 from django.utils import timezone
 
 import pytz
 
 from communities.models import Community, Post
 from datacollector.vkapi import REQUEST_DELAY_PER_TOKEN_FOR_WALL, TryAgain
-
+from .models import Median
 
 WALL_UPDATE_PERIOD = 23 * 3600
 DEFAULT_UPDATE_DURATION = REQUEST_DELAY_PER_TOKEN_FOR_WALL
 MIN_PERIOD_FOR_STATS = TimeDelta(seconds=300)
+
+MIN_POSTS_NUM_FOR_STATS = 5
+MIN_LIFETIME_OF_POST = TimeDelta(hours=24)
+PERIOD_FOR_POSTS_STATS = TimeDelta(days=7)
 
 
 logger = logging.getLogger(__name__)
@@ -72,8 +78,27 @@ class WallUpdater(Thread):
                 logger.info('got %s posts for the community(id=%s)', len(posts), comm.vkid)
                 for p in posts:
                     self._save_post(comm, p, check_time)
+
+            posts_stats = Post.objects.filter(
+                community_id=comm,
+                published_at__gt=check_time - PERIOD_FOR_POSTS_STATS - MIN_LIFETIME_OF_POST,
+                checked_at__gte=F('published_at') + MIN_LIFETIME_OF_POST,
+                views__gt=0
+            ).aggregate(
+                views_per_post=Median('views'),
+                likes_per_view=Median(Cast('likes', FloatField()) / Cast('views', FloatField())),
+                count=Count('*')
+            )
+            if posts_stats['count'] >= MIN_POSTS_NUM_FOR_STATS:
+                comm.views_per_post = posts_stats['views_per_post']
+                comm.likes_per_view = posts_stats['likes_per_view']
+            else:
+                comm.views_per_post = None
+                comm.likes_per_view = None
+
             comm.wall_checked_at = check_time
-            comm.save(update_fields=['wall_checked_at'])
+            comm.save(update_fields=['wall_checked_at', 'views_per_post', 'likes_per_view'])
+
         self._updated_walls += 1
 
     @staticmethod
@@ -117,7 +142,7 @@ class WallUpdater(Thread):
         ).order_by(
             '-followers'
         ).only(
-            'followers', 'wall_checked_at'
+            'followers', 'wall_checked_at', 'views_per_post', 'likes_per_view'
         )[:num]
 
         self._communities = sorted(
