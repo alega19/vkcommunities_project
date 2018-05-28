@@ -65,6 +65,7 @@ class Post(models.Model):
     shares = models.PositiveIntegerField()
     comments = models.PositiveIntegerField()
     marked_as_ads = models.BooleanField()
+    links = models.PositiveSmallIntegerField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         self.id = self.community_id * 2147483648 + self.vkid

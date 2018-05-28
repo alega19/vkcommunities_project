@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from threading import Thread, Event
@@ -13,6 +14,8 @@ import pytz
 from communities.models import Community, Post
 from datacollector.vkapi import REQUEST_DELAY_PER_TOKEN_FOR_WALL, TryAgain
 from .models import Median
+from .utils.tld import LATIN_TLD_LIST, CYRILLIC_TLD_LIST
+
 
 WALL_UPDATE_PERIOD = 23 * 3600
 DEFAULT_UPDATE_DURATION = REQUEST_DELAY_PER_TOKEN_FOR_WALL
@@ -101,8 +104,7 @@ class WallUpdater(Thread):
 
         self._updated_walls += 1
 
-    @staticmethod
-    def _save_post(comm, data, check_time):
+    def _save_post(self, comm, data, check_time):
         content = [data['text']]
         content.extend(p['text'] for p in data.get('copy_history', []))
 
@@ -121,8 +123,40 @@ class WallUpdater(Thread):
             likes=data['likes']['count'],
             shares=data['reposts']['count'],
             comments=data['comments']['count'],
-            marked_as_ads=data['marked_as_ads'] == 1
+            marked_as_ads=data['marked_as_ads'] == 1,
+            links=len(self._parse_links(data))
         ).save()
+
+    def _parse_links(self, data):
+        links = set()
+        found_links = self._find_links(data['text'])
+        copy_history = data.get('copy_history', [])
+        for post_data in copy_history:
+            found_links.extend(self._find_links(post_data['text']))
+        for link in found_links:
+            if not link.startswith('https://'):
+                link = 'http://' + link
+            links.add(link)
+        return links
+
+    _TLD_LIST = sorted(LATIN_TLD_LIST + CYRILLIC_TLD_LIST, reverse=True)
+    _REGEXP = re.compile(
+        r'''((?i:https://)?)'''
+        r'''(@)?'''  # to exclude emails
+        r'''((?:[-_0-9a-zA-Zа-яёґєіїА-ЯЁҐЄІЇ]+\.)+)'''
+        r'''((?i:{}))'''.format('|'.join(_TLD_LIST)) + r'''(?![-0-9a-zA-Zа-яА-Я])'''
+        r'''([/?#][-_.,/\\+=;:"'~!@#$%&?<>0-9a-zA-Zа-яёґєіїА-ЯЁҐЄІЇ]*)?'''
+    )
+    _EXCLUDED_DOMAINS = ('vk.com', 'm.vk.com', '0.vk.com')
+
+    @classmethod
+    def _find_links(cls, text):
+        links = []
+        for protocol, at, name, tld, path in cls._REGEXP.findall(text):
+            domain = name + tld
+            if not at and domain not in cls._EXCLUDED_DOMAINS:
+                links.append(protocol + domain + path)
+        return links
 
     def _load_communities(self):
         if self._updated_walls == 0:
