@@ -17,7 +17,7 @@ MIN_NETWORK_ERRORS_BEFORE_ALARM = 30
 MIN_NETWORK_ERRORS_DURATION_BEFORE_ALARM = 60
 COMMUNITIES_PER_REQUEST = 500
 REQUEST_DELAY_PER_TOKEN = 0.5
-REQUEST_DELAY_PER_TOKEN_FOR_WALL = 9
+REQUEST_DELAY_PER_TOKEN_FOR_WALL = 18
 
 
 logger = logging.getLogger(__name__)
@@ -83,12 +83,12 @@ class VkApi:
             group_ids=','.join(str(id_) for id_ in ids),
             fields='type,is_closed,verified,age_limits,name,description,members_count,status',
             access_token=token.key,
-            v='5.73')
+            v='5.74')
         communities = response.get('response')
 
         if communities is None:
             err = VkApiResponseError.from_response(response)
-            logger.warning('%s with the token %s', repr(err), token.key)
+            logger.warning('%s, token=%s', repr(err), token.key)
             raise TryAgain()
 
         return communities
@@ -111,17 +111,19 @@ class VkApi:
             count='100',
             filter='all',
             access_token=token.key,
-            v='5.73')
+            v='5.74')
         results = response.get('response')
 
         if results is None:
             err = VkApiResponseError.from_response(response)
-            logger.warning('%s with the token %s', repr(err), token.key)
+            logger.warning('%s, community(id=%s), token=%s', repr(err), id_, token.key)
+            if err.code in (15, 18):  # ether there is no access or no content
+                return None
             raise TryAgain()
 
         posts = results['items']
         if not posts:
-            logger.warning('got an empty wall for the community=%s', id_)
+            logger.warning('got an empty wall for the community(id=%s)', id_)
         return posts
 
     def _request(self, method, **params):
