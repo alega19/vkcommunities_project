@@ -1,7 +1,7 @@
 from .common import *
 
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -15,16 +15,20 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console': {
+        'file': {
             'level': 'INFO',
             'formatter': 'default',
-            'class': 'logging.StreamHandler',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': '/var/log/vkcommunities/datacollector',
+            'when': 'H',
+            'interval': 1,
+            'backupCount': 240,
         },
     },
     'loggers': {
         'datacollector': {
             'level': 'INFO',
-            'handlers': ['console'],
+            'handlers': ['file'],
         },
     }
 }

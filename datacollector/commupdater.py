@@ -33,6 +33,7 @@ class CommunitiesUpdater(Thread):
         self._stop_event.set()
 
     def run(self):
+        logger.info('started')
         while not self._stop_event.is_set():
             try:
                 self._loop()
@@ -42,6 +43,7 @@ class CommunitiesUpdater(Thread):
                 logger.exception(err)
                 break
         self._stop_event.clear()
+        logger.info('stopped')
 
     def _loop(self):
         if self._communities_buffer:

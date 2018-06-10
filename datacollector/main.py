@@ -8,11 +8,9 @@ from datacollector.commupdater import CommunitiesUpdater
 from datacollector.wallupdater import WallUpdater
 
 
-LOGGING_FORMAT = '%(asctime)s %(levelname)-8s %(name)s - %(message)s'
-
-
 def main():
-    logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
+    logger = logging.getLogger('datacollector')
+    logger.info('started')
     try:
         va = VkApi()
         cu = CommunitiesUpdater(va)
