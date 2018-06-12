@@ -18,7 +18,7 @@ def main():
         cu.start()
         wu.start()
     except Exception as err:
-        logging.exception(err)
+        logger.exception(err)
 
 
 if __name__ == '__main__':
