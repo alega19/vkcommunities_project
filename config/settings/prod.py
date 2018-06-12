@@ -3,7 +3,7 @@ from .common import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [get_secret('ALLOWED_HOSTS')]
 
 LOGGING = {
     'version': 1,
@@ -32,3 +32,5 @@ LOGGING = {
         },
     }
 }
+
+STATIC_ROOT = root('static')
