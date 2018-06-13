@@ -168,6 +168,9 @@ class CommunitiesUpdater(Thread):
                 checked_at__isnull=False
             ).order_by(
                 'checked_at'
+            ).only(
+                'deactivated', 'ctype', 'verified', 'age_limit', 'name', 'description', 'followers',
+                'status', 'icon50url', 'icon100url', 'checked_at', 'growth_per_day', 'growth_per_week'
             )[:COMMUNITIES_BUFFER_MAX_LENGTH - len(self._communities_buffer)]
             self._communities_buffer.extend(communities)
         if not self._communities_buffer:
