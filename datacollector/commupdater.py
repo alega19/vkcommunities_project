@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from communities.models import Community, CommunityHistory
 from datacollector.vkapi import COMMUNITIES_PER_REQUEST, TryAgain
+from .errors import VkApiParsingError
 
 
 COMMUNITY_UPDATE_PERIOD = TimeDelta(hours=12)
@@ -14,10 +15,6 @@ COMMUNITIES_BUFFER_MAX_LENGTH = 20 * COMMUNITIES_PER_REQUEST
 
 
 logger = logging.getLogger(__name__)
-
-
-class VkApiParsingError(Exception):
-    pass
 
 
 class CommunitiesUpdater(Thread):

@@ -13,6 +13,7 @@ import pytz
 
 from communities.models import Community, Post
 from datacollector.vkapi import REQUEST_DELAY_PER_TOKEN_FOR_WALL, TryAgain
+from .errors import VkApiParsingError
 from .models import Median
 from .utils.tld import LATIN_TLD_LIST, CYRILLIC_TLD_LIST
 
@@ -49,6 +50,8 @@ class WallUpdater(Thread):
                 self._loop()
             except TryAgain:
                 self._sleep(1)
+            except VkApiParsingError as err:
+                logger.error(repr(err))
             except Exception as err:
                 logger.exception(err)
                 break
@@ -122,12 +125,20 @@ class WallUpdater(Thread):
             published_at=pytz.utc.localize(DateTime.utcfromtimestamp(data['date'])),
             content=content,
             views=views,
-            likes=data['likes']['count'],
+            likes=self._parse_likes(comm, data),
             shares=data['reposts']['count'],
             comments=data['comments']['count'],
             marked_as_ads=data['marked_as_ads'] == 1,
             links=len(self._parse_links(data))
         ).save()
+
+    @staticmethod
+    def _parse_likes(comm, data):
+        likes = data.get('likes')
+        if likes is None:
+            raise VkApiParsingError(
+                'post(id={0}) of community(id={1}) has no likes counter'.format(data['id'], comm.vkid))
+        return likes['count']
 
     def _parse_links(self, data):
         links = set()
