@@ -50,8 +50,6 @@ class WallUpdater(Thread):
                 self._loop()
             except TryAgain:
                 self._sleep(1)
-            except VkApiParsingError as err:
-                logger.error(repr(err))
             except Exception as err:
                 logger.exception(err)
                 break
@@ -85,7 +83,10 @@ class WallUpdater(Thread):
             elif posts:
                 logger.info('got %s posts for the community(id=%s)', len(posts), comm.vkid)
                 for p in posts:
-                    self._save_post(comm, p, check_time)
+                    try:
+                        self._save_post(comm, p, check_time)
+                    except VkApiParsingError as err:
+                        logger.error(repr(err))
 
             posts_stats = Post.objects.filter(
                 community_id=comm,
