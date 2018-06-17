@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 
     'communities',
     'datacollector',
+    'utils',
 ]
 
 MIDDLEWARE = [
@@ -73,8 +74,8 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [root('templates')],
+        'APP_DIRS': False,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',

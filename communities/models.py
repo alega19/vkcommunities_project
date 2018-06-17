@@ -3,13 +3,31 @@ from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
 
+class CommunitySearchQuerySet(models.QuerySet):
+
+    def sort_by(self, sort_field, inverse):
+        if inverse:
+            inverse_prefix = '-'
+        else:
+            inverse_prefix = ''
+        return self.filter(
+            deactivated=False,
+        ).filter(
+            **{
+                sort_field + '__isnull': False,
+            }
+        ).order_by(
+            inverse_prefix + sort_field
+        )
+
+
 class Community(models.Model):
 
     TYPE_PUBLIC_PAGE = 0
     TYPE_OPEN_GROUP = 1
     TYPE_CLOSED_GROUP = 2
     TYPE_PRIVATE_GROUP = 3
-    _TYPE_CHOICES = (
+    TYPE_CHOICES = (
         (TYPE_PUBLIC_PAGE, "Public page"),
         (TYPE_OPEN_GROUP, "Open group"),
         (TYPE_CLOSED_GROUP, "Closed group"),
@@ -20,7 +38,7 @@ class Community(models.Model):
     AGELIMIT_NONE = 0
     AGELIMIT_16 = 16
     AGELIMIT_18 = 18
-    _AGELIMIT_CHOICES = (
+    AGELIMIT_CHOICES = (
         (AGELIMIT_UNKNOWN, 'Unknown'),
         (AGELIMIT_NONE, 'None'),
         (AGELIMIT_16, '16+'),
@@ -29,9 +47,9 @@ class Community(models.Model):
 
     vkid = models.PositiveIntegerField(primary_key=True)
     deactivated = models.BooleanField()
-    ctype = models.SmallIntegerField(db_column='type', choices=_TYPE_CHOICES)
+    ctype = models.SmallIntegerField(db_column='type', choices=TYPE_CHOICES)
     verified = models.NullBooleanField()
-    age_limit = models.SmallIntegerField(choices=_AGELIMIT_CHOICES, default=AGELIMIT_UNKNOWN)
+    age_limit = models.SmallIntegerField(choices=AGELIMIT_CHOICES, default=AGELIMIT_UNKNOWN)
     name = models.TextField(blank=True)
     description = models.TextField(blank=True)
     followers = models.PositiveIntegerField(blank=True, null=True)
@@ -45,6 +63,16 @@ class Community(models.Model):
     likes_per_view = models.FloatField(blank=True, null=True)
     growth_per_day = models.IntegerField(blank=True, null=True)
     growth_per_week = models.IntegerField(blank=True, null=True)
+
+    objects = models.Manager()
+    search = CommunitySearchQuerySet.as_manager()
+
+    def vk_url(self):
+        if self.ctype == self.TYPE_PUBLIC_PAGE:
+            prefix = 'public'
+        else:
+            prefix = 'club'
+        return r'https://vk.com/{0}{1:d}'.format(prefix, self.vkid)
 
 
 class CommunityHistory(models.Model):
