@@ -10,8 +10,9 @@ class CommunitySearchQuerySet(models.QuerySet):
             inverse_prefix = '-'
         else:
             inverse_prefix = ''
-        return self.filter(
-            deactivated=False,
+        return self.exclude(
+            deactivated=True,
+            ctype=Community.TYPE_PRIVATE_GROUP,
         ).filter(
             **{
                 sort_field + '__isnull': False,

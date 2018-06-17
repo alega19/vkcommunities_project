@@ -13,7 +13,12 @@ class CommunitySearchForm(forms.Form):
         (False, _('No')),
     ]
 
-    TYPE_CHOICES = [(None, _('All'))] + list(Community.TYPE_CHOICES)
+    TYPE_CHOICES = [
+        (None, _('All')),
+        (Community.TYPE_PUBLIC_PAGE, _('Public page')),
+        (Community.TYPE_OPEN_GROUP, _('Open group')),
+        (Community.TYPE_CLOSED_GROUP, _('Closed group')),
+    ]
 
     AGELIMIT_CHOICES = [(None, _('All'))] + list(Community.AGELIMIT_CHOICES)
 
