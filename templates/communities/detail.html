@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load json %}
+{% load url_query %}
+{% load math %}
+{% load community_tags %}
+
+{% block script %}
+    var history_ = {{ history | json | safe }};
+{% endblock %}
+{% block title %}{{ community.name }}{% endblock %}
+{% block content %}
+<div>
+    <div>
+        <img src="{{ community.icon50url }}">
+    </div>
+    <div>
+        <span>Name:</span>
+        <span>{{ community.name }}</span>
+    </div>
+    <div>
+        <span>Status:</span>
+        <span>{{ community.status }}</span>
+    </div>
+</div>
+<div>
+    <div>
+        <span>Followers:</span>
+        <span>
+        {% if community.followers %}
+            {{ community.followers }}
+        {% else %}
+            N/A
+        {% endif %}
+        </span>
+    </div>
+    <div>
+        <span>Views/Post:</span>
+        <span>
+        {% if community.views_per_post %}
+            {{ community.views_per_post }}
+        {% else %}
+            N/A
+        {% endif %}
+        </span>
+    </div>
+    <div>
+        <span>Likes/1KViews:</span>
+        <span>
+        {% if community.likes_per_view %}
+            {{ community.likes_per_view | multiply:1000 }}
+        {% else %}
+            N/A
+        {% endif %}
+        </span>
+    </div>
+</div>
+<div>
+    <span>Description:</span>
+    <span>{{ community.description }}</span>
+</div>
+{% if history %}
+<canvas id="history"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+<script src="{% static 'communities/scripts/detail.js' %}"></script>
+{% endif %}
+{% endblock %}
