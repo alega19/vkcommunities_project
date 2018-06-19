@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load math %}
 {% load url_query %}
-{% load humanize_int %}
+{% load inthumanize %}
 {% load community_tags %}
 {% block content %}
 <div>
@@ -39,9 +39,9 @@
             <div><a href="{{ c.vk_url }}">link</a></div>
         </td>
         <td>{{ c.name }}</td>
-        <td>{% if c.followers is not None %}{{ c.followers | round_left:2 | separate_by_spaces }}{% endif %}</td>
-        <td>{% if c.views_per_post is not None %}{{ c.views_per_post | round_left:2 | separate_by_spaces }}{% endif %}</td>
-        <td>{% if c.likes_per_view is not None %}{{ c.likes_per_view | multiply:1000 | round_left:2 }}{% endif %}</td>
+        <td>{% if c.followers is not None %}{{ c.followers | intformat:2 | intspace }}{% endif %}</td>
+        <td>{% if c.views_per_post is not None %}{{ c.views_per_post | intformat:2 | intspace }}{% endif %}</td>
+        <td>{% if c.likes_per_view is not None %}{{ c.likes_per_view | multiply:1000 | intformat:2 }}{% endif %}</td>
         <td><a href="{% url 'communities:detail' c.vkid %}">more</a></td>
     </tr>
 {% endfor %}

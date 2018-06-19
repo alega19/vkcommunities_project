@@ -5,16 +5,15 @@ register = template.Library()
 
 
 @register.filter
-def round_left(num, ndigits):
-    num = int(num)
+def intformat(num, ndigits):
+    num = round(num)
     num_str = str(num)
-    v = round(num, ndigits - len(num_str))
-    return int(v)
+    return round(num, ndigits - len(num_str))
 
 
 @register.filter
-def separate_by_spaces(num):
-    num_str = str(int(num))
+def intspace(num):
+    num_str = str(round(num))
     res = ''
     while num_str:
         res = num_str[-3:] + ' ' + res
