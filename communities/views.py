@@ -15,11 +15,24 @@ LIST_MAX = 10 * PAGE_SIZE
 @require_GET
 def list_(req):
     form = CommunitySearchForm(req.GET)
-    if not form.is_valid():
-        raise Http404()
-    sort_field = form.cleaned_data.pop('sort_field')
-    inverse = form.cleaned_data.pop('inverse')
-    qs = Community.search.sort_by(sort_field, inverse).filter(**form.cleaned_data)
+    if form.is_valid():
+        params = form.cleaned_data
+    else:
+        params = {
+            'verified': None,
+            'ctype': None,
+            'age_limit': None,
+            'sort_by': 'followers',
+            'inverse': True,
+        }
+        form = CommunitySearchForm(initial=params)
+    qs = Community.available.filter_ignoring_nonetype(
+        verified=params['verified'],
+        ctype=params['ctype'],
+        age_limit=params['age_limit'],
+    ).exclude_nulls(
+        params['sort_by']
+    ).sort_by(params['sort_by'], params['inverse'])
     paginator = Paginator(qs[:LIST_MAX], PAGE_SIZE)
     page_num = req.GET.get('p', 1)
     try:

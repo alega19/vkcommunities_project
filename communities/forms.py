@@ -5,13 +5,25 @@ from django.utils.translation import ugettext_lazy as _
 from .models import Community
 
 
-class CommunitySearchForm(forms.Form):
+class YesNoAllField(forms.NullBooleanField):
 
-    VERIFIED_CHOICES = [
+    widget = forms.Select(choices=[
         (None, _('All')),
-        (True, _('Yes')),
-        (False, _('No')),
-    ]
+        ('1', _('Yes')),
+        ('0', _('No')),
+    ])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(required=False, *args, **kwargs)
+
+
+class IntChoiceField(forms.TypedChoiceField):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(coerce=int, empty_value=None, *args, **kwargs)
+
+
+class CommunitySearchForm(forms.Form):
 
     TYPE_CHOICES = [
         (None, _('All')),
@@ -22,31 +34,14 @@ class CommunitySearchForm(forms.Form):
 
     AGELIMIT_CHOICES = [(None, _('All'))] + list(Community.AGELIMIT_CHOICES)
 
-    SORT_FIELD_CHOICES = [
+    SORTING_CHOICES = [
         ('followers', 'Followers'),
         ('views_per_post', 'Views'),
         ('likes_per_view', 'Likes'),
     ]
 
-    verified = forms.NullBooleanField(required=False, widget=widgets.Select(choices=VERIFIED_CHOICES))
-    ctype = forms.ChoiceField(required=False, choices=TYPE_CHOICES, label=_('Type'))
-    age_limit = forms.ChoiceField(required=False, choices=AGELIMIT_CHOICES)
-    sort_field = forms.ChoiceField(choices=SORT_FIELD_CHOICES)
+    verified = YesNoAllField()
+    ctype = IntChoiceField(required=False, choices=TYPE_CHOICES, label=_('Type'))
+    age_limit = IntChoiceField(required=False, choices=AGELIMIT_CHOICES)
+    sort_by = forms.ChoiceField(choices=SORTING_CHOICES)
     inverse = forms.BooleanField(required=False)
-
-    def __init__(self, data=None, *args, **kwargs):
-        if data.get('sort_field') is None:
-            data = data.copy()
-            data['sort_field'] = 'followers'
-            data['inverse'] = True
-        super().__init__(data, *args, **kwargs)
-
-    def clean(self):
-        super().clean()
-        self._remove_empty_fields()
-
-    def _remove_empty_fields(self):
-        cleaned_data = self.cleaned_data
-        empty_field_names = [f for f, v in cleaned_data.items() if v in (None, '')]
-        for field_name in empty_field_names:
-            del cleaned_data[field_name]

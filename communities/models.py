@@ -3,22 +3,38 @@ from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 
 
-class CommunitySearchQuerySet(models.QuerySet):
+class ExtraQuerySet(models.QuerySet):
 
-    def sort_by(self, sort_field, inverse):
+    def sort_by(self, field_name, inverse=False):
         if inverse:
             inverse_prefix = '-'
         else:
             inverse_prefix = ''
-        return self.exclude(
+        return self.order_by(
+            inverse_prefix + field_name
+        )
+
+    def exclude_nulls(self, *field_names):
+        return self.filter(**{
+            field_name + '__isnull': False
+            for field_name in field_names
+        })
+
+    def filter_ignoring_nonetype(self, **kwargs):
+        params = {
+            field_name: value
+            for field_name, value in kwargs.items()
+            if value is not None
+        }
+        return self.filter(**params)
+
+
+class AvailableCommunityManager(models.Manager.from_queryset(ExtraQuerySet)):
+
+    def get_queryset(self):
+        return super().get_queryset().exclude(
             deactivated=True,
             ctype=Community.TYPE_PRIVATE_GROUP,
-        ).filter(
-            **{
-                sort_field + '__isnull': False,
-            }
-        ).order_by(
-            inverse_prefix + sort_field
         )
 
 
@@ -66,7 +82,7 @@ class Community(models.Model):
     growth_per_week = models.IntegerField(blank=True, null=True)
 
     objects = models.Manager()
-    search = CommunitySearchQuerySet.as_manager()
+    available = AvailableCommunityManager()
 
     def vk_url(self):
         if self.ctype == self.TYPE_PUBLIC_PAGE:
