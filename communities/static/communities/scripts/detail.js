@@ -17,7 +17,10 @@ var myChart = new Chart(ctx, {
         },
         scales: {
             xAxes: [{
-                type: 'time'
+                type: 'time',
+                time: {
+                    unit: 'day'
+                }
             }]
         }
     }
