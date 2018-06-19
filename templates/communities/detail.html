@@ -27,7 +27,7 @@
     <div>
         <span>Followers:</span>
         <span>
-        {% if community.followers %}
+        {% if community.followers is not None %}
             {{ community.followers }}
         {% else %}
             N/A
@@ -37,8 +37,8 @@
     <div>
         <span>Views/Post:</span>
         <span>
-        {% if community.views_per_post %}
-            {{ community.views_per_post }}
+        {% if community.views_per_post is not None %}
+            {{ community.views_per_post | floatformat:0 }}
         {% else %}
             N/A
         {% endif %}
@@ -47,8 +47,8 @@
     <div>
         <span>Likes/1KViews:</span>
         <span>
-        {% if community.likes_per_view %}
-            {{ community.likes_per_view | multiply:1000 }}
+        {% if community.likes_per_view is not None %}
+            {{ community.likes_per_view | multiply:1000 | floatformat:0 }}
         {% else %}
             N/A
         {% endif %}
