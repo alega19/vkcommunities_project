@@ -113,6 +113,8 @@ class Post(models.Model):
     marked_as_ads = models.BooleanField()
     links = models.PositiveSmallIntegerField()
 
+    objects = ExtraQuerySet.as_manager()
+
     def save(self, *args, **kwargs):
         self.id = self.community_id * 2147483648 + self.vkid
         super().save(*args, **kwargs)

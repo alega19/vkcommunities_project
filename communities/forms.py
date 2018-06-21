@@ -45,3 +45,22 @@ class CommunitySearchForm(forms.Form):
     age_limit = IntChoiceField(required=False, choices=AGELIMIT_CHOICES)
     sort_by = forms.ChoiceField(choices=SORTING_CHOICES)
     inverse = forms.BooleanField(required=False)
+
+
+class PostSearchForm(forms.Form):
+
+    SORTING_CHOICES = [
+        ('published_at', 'Date'),
+        ('views', 'Views'),
+        ('likes', 'Likes'),
+        ('shares', 'Shares'),
+        ('comments', 'Comments'),
+    ]
+
+    community_id = forms.IntegerField(required=False, min_value=0)
+    date_min = forms.DateTimeField(required=False)
+    date_max = forms.DateTimeField(required=False)
+    marked_as_ads = YesNoAllField()
+    has_links = YesNoAllField()
+    sort_by = forms.ChoiceField(choices=SORTING_CHOICES)
+    inverse = forms.BooleanField(required=False)

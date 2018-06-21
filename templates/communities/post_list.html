@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load url_query %}
+{% load inthumanize %}
+{% block content %}
+<div>
+    <form action="{% url 'communities:post_list' %}" method="get">
+        {{ form }}
+        <input type="submit" name="submit" value="ok">
+    </form>
+</div>
+<div>
+    {% if page.has_previous %}
+    <a href="{% url 'communities:post_list' %}?{% url_query p=page.previous_page_number %}">&lt;-PREVIOUS</a>
+    {% endif %}
+    {% if page.has_next %}
+    <a href="{% url 'communities:post_list' %}?{% url_query p=page.next_page_number %}">NEXT-&gt;</a>
+    {% endif %}
+</div>
+<div>
+{% for p in page %}
+    <div>
+        <div>
+            <div><img src="{{ p.community.icon50url }}"></div>
+            <div>
+                <div>{{ p.community.name }}</div>
+                <div>{{ p.published_at|date:'Y/n/j G:i' }}</div>
+            </div>
+        </div>
+        <div>
+            <div>{{ p.content|first }}</div>
+            <div>
+            {% for text in p.content|slice:'1:' %}
+                <div>{{ text }}</div>
+            {% endfor %}
+            </div>
+        </div>
+        <div>
+            <span>{{ p.likes|intspace }}</span>
+            <span>{{ p.shares|intspace }}</span>
+            <span>{% if p.views is not None %}{{ p.views|intspace }}{% else %}N/A{% endif %}</span>
+            <span>{{ p.comments|intspace }}</span>
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -4,12 +4,15 @@ from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404, render
 from django.db.models import F
 
-from .models import Community, CommunityHistory
-from .forms import CommunitySearchForm
+from .models import Community, CommunityHistory, Post
+from .forms import CommunitySearchForm, PostSearchForm
 
 
 PAGE_SIZE = 50
 LIST_MAX = 10 * PAGE_SIZE
+
+POST_PAGE_SIZE = 20
+POST_LIST_MAX = 10 * POST_PAGE_SIZE
 
 
 @require_GET
@@ -53,3 +56,41 @@ def detail(req, community_id):
         y=F('followers'),
     ))
     return render(req, 'communities/detail.html', {'community': community, 'history': history})
+
+
+@require_GET
+def post_list(req):
+    form = PostSearchForm(req.GET)
+    if form.is_valid():
+        params = form.cleaned_data
+    else:
+        params = {
+            'community_id': None,
+            'date_min': None,
+            'date_max': None,
+            'marked_as_ads': None,
+            'has_links': None,
+            'sort_by': 'published_at',
+            'inverse': True,
+        }
+        form = PostSearchForm(initial=params)
+    qs = Post.objects.select_related(
+        'community'
+    ).filter_ignoring_nonetype(
+        community_id=params['community_id'],
+        published_at__gte=params['date_min'],
+        published_at__lte=params['date_max'],
+        marked_as_ads=params['marked_as_ads'],
+    )
+    if params['has_links'] is True:
+        qs = qs.exclude(links=0)
+    elif params['has_links'] is False:
+        qs = qs.filter(links=0)
+    qs = qs.exclude_nulls(params['sort_by']).sort_by(params['sort_by'], params['inverse'])
+    paginator = Paginator(qs[:POST_LIST_MAX], POST_PAGE_SIZE)
+    page_num = req.GET.get('p', 1)
+    try:
+        page = paginator.page(page_num)
+    except InvalidPage:
+        raise Http404()
+    return render(req, 'communities/post_list.html', {'page': page, 'form': form})
