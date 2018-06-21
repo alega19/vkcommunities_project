@@ -14,7 +14,8 @@ def intformat(num, ndigits):
 @register.filter
 def intspace(num):
     num_str = str(round(num))
-    res = ''
+    res = num_str[-3:]
+    num_str = num_str[:-3]
     while num_str:
         res = num_str[-3:] + ' ' + res
         num_str = num_str[:-3]
