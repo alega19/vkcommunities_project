@@ -2,7 +2,8 @@ from django.core.paginator import Paginator, InvalidPage
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404, render
-from django.db.models import F
+from django.db.models import F, FloatField, Case, When, Q, ExpressionWrapper, Value
+from django.db.models.functions import Cast
 
 from .models import Community, CommunityHistory, Post
 from .forms import CommunitySearchForm, PostSearchForm
@@ -81,6 +82,14 @@ def post_list(req):
         published_at__gte=params['date_min'],
         published_at__lte=params['date_max'],
         marked_as_ads=params['marked_as_ads'],
+    ).annotate(
+        post_likes_per_view=Case(
+            When(
+                ~Q(views=0),
+                then=Cast('likes', FloatField()) / Cast('views', FloatField())
+            ),
+            output_field=FloatField()
+        )
     )
     if params['has_links'] is True:
         qs = qs.exclude(links=0)

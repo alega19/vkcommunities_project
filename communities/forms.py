@@ -52,9 +52,7 @@ class PostSearchForm(forms.Form):
     SORTING_CHOICES = [
         ('published_at', 'Date'),
         ('views', 'Views'),
-        ('likes', 'Likes'),
-        ('shares', 'Shares'),
-        ('comments', 'Comments'),
+        ('post_likes_per_view', 'Likes/1000Views'),
     ]
 
     community_id = forms.IntegerField(required=False, min_value=0)

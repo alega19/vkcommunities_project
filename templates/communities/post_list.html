@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load math %}
 {% load url_query %}
 {% load inthumanize %}
 {% block content %}
@@ -39,6 +40,9 @@
             <span>{{ p.shares|intspace }}</span>
             <span>{% if p.views is not None %}{{ p.views|intspace }}{% else %}N/A{% endif %}</span>
             <span>{{ p.comments|intspace }}</span>
+        </div>
+        <div>
+            <span>{% if p.post_likes_per_view is not None %}{{ p.post_likes_per_view|multiply:1000|intformat:2|intspace }}{% else %}N/A{% endif %}</span>
         </div>
     </div>
 {% endfor %}
