@@ -5,17 +5,17 @@
 {% load community_tags %}
 {% block content %}
 <div>
-    <form action="{% url 'communities:list' %}" method="get">
+    <form action="{% url 'communities:community_list' %}" method="get">
         {{ form }}
         <input type="submit" name="submit" value="ok">
     </form>
 </div>
 <div>
     {% if page.has_previous %}
-    <a href="{% url 'communities:list' %}?{% url_query p=page.previous_page_number %}">&lt;-PREVIOUS</a>
+    <a href="{% url 'communities:community_list' %}?{% url_query p=page.previous_page_number %}">&lt;-PREVIOUS</a>
     {% endif %}
     {% if page.has_next %}
-    <a href="{% url 'communities:list' %}?{% url_query p=page.next_page_number %}">NEXT-&gt;</a>
+    <a href="{% url 'communities:community_list' %}?{% url_query p=page.next_page_number %}">NEXT-&gt;</a>
     {% endif %}
 </div>
 <table>
@@ -42,7 +42,7 @@
         <td>{% if c.followers is not None %}{{ c.followers | intformat:2 | intspace }}{% endif %}</td>
         <td>{% if c.views_per_post is not None %}{{ c.views_per_post | intformat:2 | intspace }}{% endif %}</td>
         <td>{% if c.likes_per_view is not None %}{{ c.likes_per_view | multiply:1000 | intformat:2 }}{% endif %}</td>
-        <td><a href="{% url 'communities:detail' c.vkid %}">more</a></td>
+        <td><a href="{% url 'communities:community_detail' c.vkid %}">more</a></td>
     </tr>
 {% endfor %}
 </table>

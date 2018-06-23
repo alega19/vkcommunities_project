@@ -4,7 +4,7 @@ var myChart = new Chart(ctx, {
     data: {
         datasets: [{
             label: 'followers',
-            data: history_
+            data: followers_history
         }]
     },
     options: {

@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils import timezone
+from django.db.models.expressions import RawSQL
 from django.contrib.postgres.fields import JSONField
 
 
@@ -99,6 +99,22 @@ class CommunityHistory(models.Model):
     followers = models.PositiveIntegerField()
 
 
+class PostManager(models.Manager.from_queryset(ExtraQuerySet)):
+
+    # This expression has an index.
+    # Since PostgreSQL requires the expressions in index and query to match it is necessary to use raw SQL.
+    # Even the different ordering of arguments in an AND-expression makes the index useless.
+    POST_LIKES_PER_VIEW_EXPRESSION = (
+        'CASE WHEN ("communities_post"."views" IS NOT NULL AND "communities_post"."views" <> 0) '
+        'THEN ("communities_post"."likes"::double precision / "communities_post"."views"::double precision) END'
+    )
+
+    def with_likes_per_view(self):
+        return super().get_queryset().annotate(
+            post_likes_per_view=RawSQL(self.POST_LIKES_PER_VIEW_EXPRESSION, (), output_field=models.FloatField())
+        )
+
+
 class Post(models.Model):
     id = models.BigIntegerField(primary_key=True)
     community = models.ForeignKey('Community', on_delete=models.CASCADE)
@@ -113,7 +129,7 @@ class Post(models.Model):
     marked_as_ads = models.BooleanField()
     links = models.PositiveSmallIntegerField()
 
-    objects = ExtraQuerySet.as_manager()
+    objects = PostManager()
 
     def save(self, *args, **kwargs):
         self.id = self.community_id * 2147483648 + self.vkid

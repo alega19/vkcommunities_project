@@ -1,23 +1,22 @@
 from django.core.paginator import Paginator, InvalidPage
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404, render
-from django.db.models import F, FloatField, Case, When, Q, ExpressionWrapper, Value
-from django.db.models.functions import Cast
+from django.db.models import F
 
 from .models import Community, CommunityHistory, Post
 from .forms import CommunitySearchForm, PostSearchForm
 
 
-PAGE_SIZE = 50
-LIST_MAX = 10 * PAGE_SIZE
+COMMUNITY_PAGE_SIZE = 50
+COMMUNITY_LIST_MAX = 10 * COMMUNITY_PAGE_SIZE
 
 POST_PAGE_SIZE = 20
 POST_LIST_MAX = 10 * POST_PAGE_SIZE
 
 
 @require_GET
-def list_(req):
+def community_list(req):
     form = CommunitySearchForm(req.GET)
     if form.is_valid():
         params = form.cleaned_data
@@ -37,27 +36,30 @@ def list_(req):
     ).exclude_nulls(
         params['sort_by']
     ).sort_by(params['sort_by'], params['inverse'])
-    communities = qs[:LIST_MAX]
-    paginator = Paginator(communities, PAGE_SIZE)
+    communities = qs[:COMMUNITY_LIST_MAX]
+    paginator = Paginator(communities, COMMUNITY_PAGE_SIZE)
     page_num = req.GET.get('p', 1)
     try:
         page = paginator.page(page_num)
     except InvalidPage:
         raise Http404()
-    return render(req, 'communities/list.html', {'page': page, 'form': form})
+    return render(req, 'communities/community_list.html', {'page': page, 'form': form})
 
 
 @require_GET
-def detail(req, community_id):
+def community_detail(req, community_id):
     community_id = int(community_id)
     community = get_object_or_404(Community, pk=community_id)
-    history = list(CommunityHistory.objects.filter(
+    followers_history = list(CommunityHistory.objects.filter(
         community=community,
     ).values(
         x=F('checked_at'),
         y=F('followers'),
     ))
-    return render(req, 'communities/detail.html', {'community': community, 'history': history})
+    return render(req, 'communities/community_detail.html', {
+        'community': community,
+        'followers_history': followers_history
+    })
 
 
 @require_GET
@@ -76,21 +78,13 @@ def post_list(req):
             'inverse': True,
         }
         form = PostSearchForm(initial=params)
-    qs = Post.objects.select_related(
+    qs = Post.objects.with_likes_per_view().select_related(
         'community'
     ).filter_ignoring_nonetype(
         community_id=params['community_id'],
         published_at__gte=params['date_min'],
         published_at__lte=params['date_max'],
         marked_as_ads=params['marked_as_ads'],
-    ).annotate(
-        post_likes_per_view=Case(
-            When(
-                ~Q(views=0),
-                then=Cast('likes', FloatField()) / Cast('views', FloatField())
-            ),
-            output_field=FloatField()
-        )
     )
     if params['has_links'] is True:
         qs = qs.exclude(links=0)

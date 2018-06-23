@@ -6,7 +6,7 @@
 {% load community_tags %}
 
 {% block script %}
-    var history_ = {{ history | json | safe }};
+    var followers_history = {{ followers_history | json | safe }};
 {% endblock %}
 {% block title %}{{ community.name }}{% endblock %}
 {% block content %}
@@ -62,6 +62,6 @@
 {% if history|length >= 2 %}
 <canvas id="history"></canvas>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-<script src="{% static 'communities/scripts/detail.js' %}"></script>
+<script src="{% static 'communities/scripts/community_detail.js' %}"></script>
 {% endif %}
 {% endblock %}
