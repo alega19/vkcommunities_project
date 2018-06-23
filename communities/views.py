@@ -37,7 +37,8 @@ def list_(req):
     ).exclude_nulls(
         params['sort_by']
     ).sort_by(params['sort_by'], params['inverse'])
-    paginator = Paginator(qs[:LIST_MAX], PAGE_SIZE)
+    communities = qs[:LIST_MAX]
+    paginator = Paginator(communities, PAGE_SIZE)
     page_num = req.GET.get('p', 1)
     try:
         page = paginator.page(page_num)
@@ -96,7 +97,8 @@ def post_list(req):
     elif params['has_links'] is False:
         qs = qs.filter(links=0)
     qs = qs.exclude_nulls(params['sort_by']).sort_by(params['sort_by'], params['inverse'])
-    paginator = Paginator(qs[:POST_LIST_MAX], POST_PAGE_SIZE)
+    posts = list(qs[:POST_LIST_MAX])
+    paginator = Paginator(posts, POST_PAGE_SIZE)
     page_num = req.GET.get('p', 1)
     try:
         page = paginator.page(page_num)
