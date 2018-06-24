@@ -82,10 +82,14 @@ def post_list(req):
     else:
         params = {
             'community_id': None,
-            'date_min': None,
-            'date_max': None,
             'marked_as_ads': None,
             'has_links': None,
+            'date_min': None,
+            'date_max': None,
+            'views_min': None,
+            'views_max': None,
+            'likes_per_view_min': None,
+            'likes_per_view_max': None,
             'sort_by': 'published_at',
             'inverse': True,
         }
@@ -94,9 +98,13 @@ def post_list(req):
         'community'
     ).filter_ignoring_nonetype(
         community_id=params['community_id'],
+        marked_as_ads=params['marked_as_ads'],
         published_at__gte=params['date_min'],
         published_at__lte=params['date_max'],
-        marked_as_ads=params['marked_as_ads'],
+        views__gte=params['views_min'],
+        views__lte=params['views_max'],
+        post_likes_per_view__gte=params['likes_per_view_min'],
+        post_likes_per_view__lte=params['likes_per_view_max'],
     )
     if params['has_links'] is True:
         qs = qs.exclude(links=0)

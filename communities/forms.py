@@ -23,7 +23,19 @@ class IntChoiceField(forms.TypedChoiceField):
         super().__init__(coerce=int, empty_value=None, *args, **kwargs)
 
 
-class CommunitySearchForm(forms.Form):
+class AbstractForm(forms.Form):
+
+    def _validate_range(self, minimum_field_name, maximum_field_name):
+        minimum = self.cleaned_data.get(minimum_field_name)
+        maximum = self.cleaned_data.get(maximum_field_name)
+        if minimum is not None and maximum is not None and minimum > maximum:
+            raise forms.ValidationError(
+                _('The minimum more than the maximum'),
+                code='invalid_range'
+            )
+
+
+class CommunitySearchForm(AbstractForm):
 
     TYPE_CHOICES = [
         (None, _('All')),
@@ -72,17 +84,8 @@ class CommunitySearchForm(forms.Form):
         self._validate_range('views_per_post_min', 'views_per_post_max')
         self._validate_range('likes_per_view_min', 'likes_per_view_max')
 
-    def _validate_range(self, minimum_field_name, maximum_field_name):
-        minimum = self.cleaned_data.get(minimum_field_name)
-        maximum = self.cleaned_data.get(maximum_field_name)
-        if minimum is not None and maximum is not None and minimum > maximum:
-            raise forms.ValidationError(
-                _('The minimum must not be more than the maximum'),
-                code='invalid_range'
-            )
 
-
-class PostSearchForm(forms.Form):
+class PostSearchForm(AbstractForm):
 
     SORTING_CHOICES = [
         ('published_at', 'Date'),
@@ -91,9 +94,33 @@ class PostSearchForm(forms.Form):
     ]
 
     community_id = forms.IntegerField(required=False, min_value=0)
-    date_min = forms.DateTimeField(required=False)
-    date_max = forms.DateTimeField(required=False)
     marked_as_ads = YesNoAllField()
     has_links = YesNoAllField()
+    date_min = forms.DateTimeField(required=False)
+    date_max = forms.DateTimeField(required=False)
+    views_min = forms.IntegerField(required=False, min_value=0)
+    views_max = forms.IntegerField(required=False, min_value=0)
+    likes_per_view_min = forms.IntegerField(required=False, min_value=0)
+    likes_per_view_max = forms.IntegerField(required=False, min_value=0)
     sort_by = forms.ChoiceField(choices=SORTING_CHOICES)
     inverse = forms.BooleanField(required=False)
+
+    def clean_likes_per_view_min(self):
+        value = self.cleaned_data.get('likes_per_view_min')
+        if value is not None:
+            return value * 0.001
+        else:
+            return value
+
+    def clean_likes_per_view_max(self):
+        value = self.cleaned_data.get('likes_per_view_max')
+        if value is not None:
+            return value * 0.001
+        else:
+            return value
+
+    def clean(self):
+        super().clean()
+        self._validate_range('date_min', 'date_max')
+        self._validate_range('views_min', 'views_max')
+        self._validate_range('likes_per_view_min', 'likes_per_view_max')
