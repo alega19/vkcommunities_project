@@ -25,6 +25,12 @@ def community_list(req):
             'verified': None,
             'ctype': None,
             'age_limit': None,
+            'followers_min': None,
+            'followers_max': None,
+            'views_per_post_min': None,
+            'views_per_post_max': None,
+            'likes_per_view_min': None,
+            'likes_per_view_max': None,
             'sort_by': 'followers',
             'inverse': True,
         }
@@ -33,6 +39,12 @@ def community_list(req):
         verified=params['verified'],
         ctype=params['ctype'],
         age_limit=params['age_limit'],
+        followers__gte=params['followers_min'],
+        followers__lte=params['followers_max'],
+        views_per_post__gte=params['views_per_post_min'],
+        views_per_post__lte=params['views_per_post_max'],
+        likes_per_view__gte=params['likes_per_view_min'],
+        likes_per_view__lte=params['likes_per_view_max'],
     ).exclude_nulls(
         params['sort_by']
     ).sort_by(params['sort_by'], params['inverse'])
