@@ -59,7 +59,7 @@
     <span>Description:</span>
     <span>{{ community.description }}</span>
 </div>
-{% if history|length >= 2 %}
+{% if followers_history|length >= 2 %}
 <canvas id="history"></canvas>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
 <script src="{% static 'communities/scripts/community_detail.js' %}"></script>
