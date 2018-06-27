@@ -94,6 +94,7 @@ class PostSearchForm(AbstractForm):
     ]
 
     community_id = forms.IntegerField(required=False, min_value=0)
+    search = forms.CharField(required=False, empty_value=None)
     marked_as_ads = YesNoAllField()
     has_links = YesNoAllField()
     date_min = forms.DateTimeField(required=False)

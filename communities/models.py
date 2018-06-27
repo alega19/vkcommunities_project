@@ -1,6 +1,14 @@
 from django.db import models
-from django.db.models.expressions import RawSQL
+from django.db.models.expressions import RawSQL, Func, F, Value, Q
 from django.contrib.postgres.fields import JSONField
+
+
+class Separator(Func):
+    template = '(%(expressions)s)'
+
+    def __init__(self, separator, *expressions, **extra):
+        self.arg_joiner = ' {0} '.format(separator)
+        super().__init__(*expressions, **extra)
 
 
 class ExtraQuerySet(models.QuerySet):
@@ -27,6 +35,29 @@ class ExtraQuerySet(models.QuerySet):
             if value is not None
         }
         return self.filter(**params)
+
+    def search(self, text, *field_names, config='russian'):
+        # Django's SearchVector does't work with jsonb
+        if not text:
+            return self
+        query = Func(Value(config), Value(text), function='plainto_tsquery')
+        expressions = [
+            Func(Value(config), F(fn), template="COALESCE(to_tsvector(%(expressions)s), ''::tsvector)")
+            for fn in field_names
+        ]
+        return self.annotate(
+            query_size_annotation=Func(
+                query,
+                function='numnode',
+                output_field=models.IntegerField()
+            ),
+            found_annotation=Separator(
+                '@@',
+                Separator('||', *expressions),
+                query,
+                output_field=models.BooleanField()
+            )
+        ).filter(Q(found_annotation=True) | Q(query_size_annotation=0))
 
 
 class AvailableCommunityManager(models.Manager.from_queryset(ExtraQuerySet)):
