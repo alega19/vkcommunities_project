@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'accounts',
     'communities',
     'datacollector',
     'utils',
@@ -142,3 +143,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+AUTH_USER_MODEL = 'accounts.User'
+
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'communities:community_list'
+LOGOUT_REDIRECT_URL = LOGIN_URL
+
+PASSWORD_RESET_TIMEOUT_DAYS = 2  # to reset password and confirm email
+
+
+# Sending emails
+EMAIL_TIMEOUT = 60
+EMAIL_HOST = get_secret('EMAIL_HOST')
+EMAIL_PORT = get_secret('EMAIL_PORT')
+EMAIL_HOST_USER = get_secret('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = get_secret('EMAIL_USE_TLS')
+EMAIL_USE_SSL = get_secret('EMAIL_USE_SSL')
+DEFAULT_FROM_EMAIL = get_secret('DEFAULT_FROM_EMAIL')
