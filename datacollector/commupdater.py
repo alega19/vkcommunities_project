@@ -38,7 +38,7 @@ class CommunitiesUpdater(Thread):
                 self._sleep(1)
             except Exception as err:
                 logger.exception(err)
-                break
+                self._sleep(10)
         self._stop_event.clear()
         logger.info('stopped')
 
