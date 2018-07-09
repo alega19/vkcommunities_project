@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
+<form action="{{ request.path }}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <input type="submit" name="submit" value="Login">
+</form>
+<div>
+    <p>If you've forgotten a password click <a href="{% url 'accounts:recover' %}">here</a> to recover your account</p>
+</div>
+{% endblock %}

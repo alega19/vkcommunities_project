@@ -1,7 +1,7 @@
 from .common import *
 
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -29,4 +29,4 @@ LOGGING = {
     }
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
