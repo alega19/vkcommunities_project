@@ -3,6 +3,7 @@ from django.http import Http404
 from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404, render
 from django.db.models import F
+from django.contrib.auth.decorators import login_required
 
 from .models import Community, CommunityHistory, Post
 from .forms import CommunitySearchForm, PostSearchForm
@@ -16,6 +17,7 @@ POST_LIST_MAX = 10 * POST_PAGE_SIZE
 
 
 @require_GET
+@login_required
 def community_list(req):
     form = CommunitySearchForm(req.GET)
     if form.is_valid():
@@ -59,6 +61,7 @@ def community_list(req):
 
 
 @require_GET
+@login_required
 def community_detail(req, community_id):
     community_id = int(community_id)
     community = get_object_or_404(Community, pk=community_id)
@@ -75,6 +78,7 @@ def community_detail(req, community_id):
 
 
 @require_GET
+@login_required
 def post_list(req):
     form = PostSearchForm(req.GET)
     if form.is_valid():
