@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils import timezone
-from django.core.mail import send_mail
+
+from .tasks import send_mail
 
 
 class UserManager(BaseUserManager):
@@ -45,4 +46,4 @@ class User(AbstractBaseUser):
         return True
 
     def send_email(self, subject, message, fail_silently=False):
-        return send_mail(subject, message, None, [self.email], fail_silently=fail_silently)
+        return send_mail.delay(subject, message, None, [self.email], fail_silently=fail_silently)

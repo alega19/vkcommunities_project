@@ -162,3 +162,18 @@ EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = get_secret('EMAIL_USE_TLS')
 EMAIL_USE_SSL = get_secret('EMAIL_USE_SSL')
 DEFAULT_FROM_EMAIL = get_secret('DEFAULT_FROM_EMAIL')
+
+
+# Celery
+from kombu import Queue, Exchange
+CELERY_BROKER_URL = get_secret('CELERY_BROKER_URL')
+CELERY_TASK_QUEUES = [
+    Queue('email', Exchange('vkcommunities', 'direct'), routing_key='email')
+]
+CELERY_TASK_ROUTES = {
+    'accounts.tasks.send_mail': {'queue': 'email', 'routing_key': 'email'}
+}
+CELERY_TASK_TIME_LIMIT = 60
+CELERY_WORKER_CONCURRENCY = 4
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False

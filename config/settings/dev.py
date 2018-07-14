@@ -13,6 +13,9 @@ LOGGING = {
             'format': '%(asctime)s %(levelname)-8s %(name)s - %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
+        'celery': {
+            'format': '[%(asctime)s: %(levelname)s/%(processName)s] %(message)s',
+        },
     },
     'handlers': {
         'console': {
@@ -20,11 +23,20 @@ LOGGING = {
             'formatter': 'default',
             'class': 'logging.StreamHandler',
         },
+        'celery_console': {
+            'level': 'INFO',
+            'formatter': 'celery',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'datacollector': {
             'level': 'INFO',
             'handlers': ['console'],
+        },
+        'celery': {
+            'level': 'INFO',
+            'handlers': ['celery_console'],
         },
     }
 }

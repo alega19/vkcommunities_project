@@ -13,6 +13,9 @@ LOGGING = {
             'format': '%(asctime)s %(levelname)-8s %(name)s - %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
+        'celery': {
+            'format': '[%(asctime)s: %(levelname)s/%(processName)s] %(message)s',
+        },
     },
     'handlers': {
         'file': {
@@ -23,12 +26,27 @@ LOGGING = {
             'when': 'H',
             'interval': 1,
             'backupCount': 240,
+            'encoding': 'utf-8',
+        },
+        'celery_file': {
+            'level': 'INFO',
+            'formatter': 'default',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': '/var/log/vkcommunities/celery',
+            'when': 'H',
+            'interval': 1,
+            'backupCount': 240,
+            'encoding': 'utf-8',
         },
     },
     'loggers': {
         'datacollector': {
             'level': 'INFO',
             'handlers': ['file'],
+        },
+        'celery': {
+            'level': 'INFO',
+            'handlers': ['celery_file'],
         },
     }
 }
