@@ -30,7 +30,7 @@ LOGGING = {
         },
         'celery_file': {
             'level': 'INFO',
-            'formatter': 'default',
+            'formatter': 'celery',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': '/var/log/vkcommunities/celery',
             'when': 'H',
