@@ -1,6 +1,167 @@
-from django.test import SimpleTestCase
+from datetime import timedelta as TimeDelta
+from unittest.mock import Mock, patch
 
-from ..wallupdater import WallUpdater
+from django.test import SimpleTestCase, TestCase
+from django.utils import timezone
+
+from ..wallupdater import (
+    WallUpdater, MIN_PERIOD_FOR_STATS, VkApiParsingError,
+    MIN_POSTS_NUM_FOR_STATS, MIN_LIFETIME_OF_POST
+)
+from communities.models import Community, Post
+
+
+class WallUpdaterTest(TestCase):
+
+    def test_period_for_statistics_is_over(self):
+        now = timezone.now()
+        wu = WallUpdater(None)
+        wu._period_start = now
+        with patch('django.utils.timezone.now', return_value=now + MIN_PERIOD_FOR_STATS):
+            self.assertTrue(wu._period_for_statistics_is_over())
+        with patch('django.utils.timezone.now', return_value=now + MIN_PERIOD_FOR_STATS - TimeDelta(seconds=1)):
+            self.assertFalse(wu._period_for_statistics_is_over())
+
+    def test_parsing_error_does_not_stop_work(self):
+        vk_api = Mock()
+        vk_api.get_community_wall.return_value = [{'id': None}] * 3
+        wu = WallUpdater(vk_api)
+        with patch.object(wu, '_current_community') as _current_community,\
+                patch.object(wu, '_parse_post') as _parse_post:
+            _current_community.return_value = Mock(wall_checked_at=None)
+            _parse_post.side_effect = [42, VkApiParsingError(), 42]
+            posts = wu._get_new_posts()
+        self.assertEquals(posts, [42, 42])
+
+    def test_wall_stats_calculation(self):
+        check_time = timezone.now()
+        comm = Community.objects.create(vkid=42, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        posts = [
+            Post.objects.create(
+                community=comm,
+                vkid=i,
+                checked_at=check_time,
+                published_at=check_time - MIN_LIFETIME_OF_POST,
+                content=[],
+                views=100 + 10 * i,
+                likes=10 + i,
+                shares=1,
+                comments=0,
+                marked_as_ads=False,
+                links=0,
+            )
+            for i in range(MIN_POSTS_NUM_FOR_STATS)
+        ]
+        views_per_post = self._median([p.views for p in posts])
+        likes_per_view = self._median([p.likes / p.views for p in posts])
+        wu = WallUpdater(None)
+        wu._check_time = check_time
+        with patch.object(wu, '_current_community') as _current_community:
+            _current_community.return_value = comm
+            wu._update_wall_stats()
+            self.assertAlmostEqual(comm.views_per_post, views_per_post)
+            self.assertAlmostEqual(comm.likes_per_view, likes_per_view)
+
+    @staticmethod
+    def _median(seq):
+        seq = sorted(seq)
+        if len(seq) % 2 == 1:
+            return seq[len(seq) // 2]
+        else:
+            half = len(seq) // 2
+            return (seq[half - 1] + seq[half]) / 2
+
+    def test_wall_stats_are_reset_when_too_few_posts(self):
+        check_time = timezone.now()
+        comm = Community.objects.create(vkid=42, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE,
+                                        views_per_post=100, likes_per_view=0.1)
+        for i in range(MIN_POSTS_NUM_FOR_STATS - 1):
+            Post(
+                community=comm,
+                vkid=i,
+                checked_at=check_time,
+                published_at=check_time - MIN_LIFETIME_OF_POST,
+                content=[],
+                views=100,
+                likes=10,
+                shares=1,
+                comments=0,
+                marked_as_ads=False,
+                links=0,
+            ).save()
+        wu = WallUpdater(None)
+        wu._check_time = check_time
+        with patch.object(wu, '_current_community') as _current_community:
+            _current_community.return_value = comm
+            wu._update_wall_stats()
+            self.assertIsNone(comm.views_per_post)
+            self.assertIsNone(comm.likes_per_view)
+
+    def test_load_accessible_communities(self):
+        communities = [
+            Community.objects.create(vkid=1, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE, followers=0),
+            Community.objects.create(vkid=2, deactivated=False, ctype=Community.TYPE_OPEN_GROUP, followers=0),
+            Community.objects.create(vkid=3, deactivated=False, ctype=Community.TYPE_CLOSED_GROUP, followers=0),
+            Community.objects.create(vkid=4, deactivated=False, ctype=Community.TYPE_PRIVATE_GROUP, followers=0),
+            Community.objects.create(vkid=5, deactivated=True, ctype=Community.TYPE_PUBLIC_PAGE, followers=0),
+            Community.objects.create(vkid=6, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE, followers=None),
+        ]
+        wu = WallUpdater(None)
+        wu._load_accessible_communities(len(communities))
+        self.assertEqual(
+            sorted(c.vkid for c in wu._communities),
+            [1, 2]
+        )
+
+    def test_priority_of_community_depends_on_followers_num(self):
+        other_attrs = dict(deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        communities = [
+            Community(vkid=1, followers=0, **other_attrs),
+            Community(vkid=2, followers=20, **other_attrs),
+            Community(vkid=3, followers=10, **other_attrs),
+        ]
+        self.assertEqual(
+            [c.vkid for c in sorted(communities, key=WallUpdater._priority_of_community)],
+            [1, 3, 2]
+        )
+
+    def test_new_communities_have_highest_priority(self):
+        other_attrs = dict(deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE, followers=0)
+        dt = timezone.now()
+        communities = [
+            Community(vkid=1, wall_checked_at=dt, **other_attrs),
+            Community(vkid=2, **other_attrs),
+            Community(vkid=3, wall_checked_at=dt, **other_attrs),
+        ]
+        self.assertEqual(
+            sorted(communities, key=WallUpdater._priority_of_community)[-1].vkid,
+            2
+        )
+
+    def test_update_time_is_more_important_than_followers_num(self):
+        other_attrs = dict(deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        dt = timezone.now()
+        communities = [
+            Community(vkid=1, followers=0, wall_checked_at=dt + TimeDelta(hours=1), **other_attrs),
+            Community(vkid=2, followers=20, wall_checked_at=dt, **other_attrs),
+            Community(vkid=3, followers=10, wall_checked_at=dt + TimeDelta(hours=2), **other_attrs),
+        ]
+        self.assertEqual(
+            [c.vkid for c in sorted(communities, key=WallUpdater._priority_of_community)],
+            [3, 1, 2]
+        )
+
+    def test_current_community_has_highest_priority(self):
+        other_attrs = dict(deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        dt = timezone.now()
+        communities = [
+            Community.objects.create(vkid=1, followers=0, wall_checked_at=dt + TimeDelta(hours=1), **other_attrs),
+            Community.objects.create(vkid=2, followers=20, wall_checked_at=dt, **other_attrs),
+            Community.objects.create(vkid=3, followers=10, wall_checked_at=dt + TimeDelta(hours=2), **other_attrs),
+        ]
+        wu = WallUpdater(None)
+        wu._load_accessible_communities(len(communities))
+        self.assertEqual(wu._current_community().vkid, 2)
 
 
 class LinksParsingTests(SimpleTestCase):
