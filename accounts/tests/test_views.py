@@ -1,10 +1,11 @@
+from urllib.parse import urlparse
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.urls import reverse
 from django.core import mail
 
-from ..models import User
-
-from urllib.parse import urlparse
+from ..models import User, send_mail
 
 
 def find_links(s):
@@ -18,11 +19,12 @@ class SignupTest(TestCase):
     VALID_PASSWORD = 'itismypassword42'
 
     def test_registration(self):
-        resp = self.client.post(reverse('accounts:signup'), {
-            'email': self.VALID_EMAIL,
-            'password1': self.VALID_PASSWORD,
-            'password2': self.VALID_PASSWORD
-        })
+        with patch('accounts.models.send_mail.delay', side_effect=send_mail):
+            resp = self.client.post(reverse('accounts:signup'), {
+                'email': self.VALID_EMAIL,
+                'password1': self.VALID_PASSWORD,
+                'password2': self.VALID_PASSWORD
+            })
         self.assertRedirects(resp, reverse('accounts:confirm_email_sent'))
 
         user = User.objects.get(email=self.VALID_EMAIL)
@@ -45,11 +47,12 @@ class SignupTest(TestCase):
 
     def test_registration_when_inactive_account_with_that_email_exists(self):
         User.objects.create_user(self.VALID_EMAIL, self.VALID_PASSWORD)
-        resp = self.client.post(reverse('accounts:signup'), {
-            'email': self.VALID_EMAIL,
-            'password1': self.VALID_PASSWORD,
-            'password2': self.VALID_PASSWORD
-        })
+        with patch('accounts.models.send_mail.delay', side_effect=send_mail):
+            resp = self.client.post(reverse('accounts:signup'), {
+                'email': self.VALID_EMAIL,
+                'password1': self.VALID_PASSWORD,
+                'password2': self.VALID_PASSWORD
+            })
         self.assertRedirects(resp, reverse('accounts:confirm_email_sent'))
 
         user = User.objects.get(email=self.VALID_EMAIL)
@@ -140,7 +143,8 @@ class RecoverAccountTest(TestCase):
 
     def test_recover(self):
         User.objects.create_user(self.VALID_EMAIL, self.VALID_PASSWORD, is_active=True)
-        resp = self.client.post(reverse('accounts:recover'), {'email': self.VALID_EMAIL})
+        with patch('accounts.models.send_mail.delay', side_effect=send_mail):
+            resp = self.client.post(reverse('accounts:recover'), {'email': self.VALID_EMAIL})
         self.assertRedirects(resp, reverse('accounts:recovery_email_sent'))
 
         self.assertEqual(len(mail.outbox), 1)
