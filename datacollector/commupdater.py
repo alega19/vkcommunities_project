@@ -34,8 +34,6 @@ class CommunitiesUpdater(Thread):
         while not self._stop_event.is_set():
             try:
                 self._loop()
-            except TryAgain:
-                self._sleep(1)
             except Exception as err:
                 logger.exception(err)
                 self._sleep(10)
@@ -56,7 +54,7 @@ class CommunitiesUpdater(Thread):
         next_check_time = last_check_time + COMMUNITY_UPDATE_PERIOD
         delay = (next_check_time - timezone.now()).total_seconds()
         if delay < 0:
-            logger.warning('updating is %s seconds late', -delay)
+            logger.warning('updating is %.2f seconds late', -delay)
         elif delay > 0:
             self._sleep(delay)
 
@@ -65,19 +63,27 @@ class CommunitiesUpdater(Thread):
 
     def _update_communities(self):
         communities = self._communities_buffer[:COMMUNITIES_PER_REQUEST]
-        items = self._request(communities)
-        vkid2data = {item['id']: item for item in items}
-        for comm in communities:
-            data = vkid2data.get(comm.vkid)
-            self._update_community(comm, data)
-            logger.info('community(id=%s) updated', comm.vkid)
+        vkid2data = self._request(communities)
+        for c in communities:
+            try:
+                data = vkid2data.get(c.vkid)
+                self._update_community(c, data)
+                logger.info('community(id=%s) updated', c.vkid)
+            except VkApiParsingError as err:
+                logger.error('community(id=%s): %s', c.vkid, repr(err))
         self._communities_buffer = self._communities_buffer[COMMUNITIES_PER_REQUEST:]
 
     def _request(self, communities):
         ids = [c.vkid for c in communities]
-        items = self._vkapi.get_communities(ids)
-        self._check_time = timezone.now()
-        return items
+        while True:
+            try:
+                self._check_time = timezone.now()
+                items = self._vkapi.get_communities(ids)
+                break
+            except TryAgain:
+                self._sleep(1)
+        id2item = {i['id']: i for i in items}
+        return id2item
 
     def _update_community(self, comm, data):
         followers = data.get('members_count')
