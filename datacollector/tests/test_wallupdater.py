@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta as TimeDelta
 from unittest.mock import Mock, patch
 
@@ -162,6 +163,119 @@ class WallUpdaterTest(TestCase):
         wu = WallUpdater(None)
         wu._load_accessible_communities(len(communities))
         self.assertEqual(wu._current_community().vkid, 2)
+
+    def test_content_attachments_parsing(self):
+        data = """
+        {
+            "id":34253456,
+            "from_id":-57846937,
+            "owner_id":-57846937,
+            "text":"test text",
+            "attachments":[
+                {
+                    "type":"photo",
+                    "photo":{
+                        "id":235534,
+                        "album_id":-7,
+                        "owner_id":-57846937,
+                        "user_id":100,
+                        "photo_75":"https:\/\/pp.userapi.com\/path75.jpg",
+                        "photo_130":"https:\/\/pp.userapi.com\/path130.jpg",
+                        "photo_604":"https:\/\/pp.userapi.com\/path604.jpg",
+                        "photo_807":"https:\/\/pp.userapi.com\/path807.jpg",
+                        "photo_1280":"https:\/\/pp.userapi.com\/path1280.jpg",
+                        "width":1074,
+                        "height":478,
+                        "text":"",
+                        "date":1528820156,
+                        "post_id":34253456
+                    }
+                },
+                {
+                    "type":"video",
+                    "video":{
+                        "id":234325,
+                        "owner_id":-57846937,
+                        "title":"test title",
+                        "duration":35,
+                        "description":"",
+                        "date":1532160124,
+                        "comments":96,
+                        "views":314612,
+                        "width":640,
+                        "height":640,
+                        "photo_130":"https:\/\/pp.userapi.com\/path130.jpg",
+                        "photo_320":"https:\/\/pp.userapi.com\/path320.jpg",
+                        "photo_800":"https:\/\/pp.userapi.com\/path800.jpg",
+                        "can_add":1
+                    }
+                }
+            ]
+        }
+        """
+        data = json.loads(data)
+        content = WallUpdater._parse_content(data)
+        self.assertEqual(content, [
+            {
+                "from_id": -57846937,
+                "text": "test text",
+                "attachments": [
+                    {
+                        "type": "photo",
+                        "photo": r"https://pp.userapi.com/path604.jpg",
+                    },
+                    {
+                        "type": "video",
+                        "title": "test title",
+                        "preview": r"https://pp.userapi.com/path800.jpg",
+                        "duration": 35,
+                        "views": 314612,
+                    },
+                ]
+            }
+        ])
+
+    def test_content_copy_history_parsing(self):
+        data = """
+        {
+            "id":34253456,
+            "from_id":-57846937,
+            "owner_id":-333,
+            "text":"text1",
+            "copy_history": [
+                {
+                    "id":1,
+                    "from_id":-1,
+                    "owner_id":-1,
+                    "text":"text2"
+                },
+                {
+                    "id":2,
+                    "from_id":-2,
+                    "owner_id":-22,
+                    "text":"text3"
+                }
+            ]
+        }
+        """
+        data = json.loads(data)
+        content = WallUpdater._parse_content(data)
+        self.assertEqual(content, [
+            {
+                "from_id": -57846937,
+                "owner_id": -333,
+                "text": "text1",
+            },
+            {
+                "from_id": -1,
+                "text": "text2",
+            },
+            {
+                "from_id": -2,
+                "owner_id": -22,
+                "text": "text3",
+            },
+        ])
 
 
 class LinksParsingTests(SimpleTestCase):

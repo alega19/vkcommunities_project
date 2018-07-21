@@ -169,14 +169,68 @@ class WallUpdater(Thread):
         dt = DateTime.utcfromtimestamp(timestamp)
         return pytz.utc.localize(dt)
 
-    @staticmethod
-    def _parse_content(data):
+    @classmethod
+    def _parse_content(cls, data, is_copy_history=False):
         try:
-            content = [data['text']]
-            content.extend(p['text'] for p in data.get('copy_history', []))
+            item = {
+                'from_id': data['from_id'],
+                'text': data['text']
+            }
+            if data['owner_id'] != data['from_id']:
+                item['owner_id'] = data['owner_id']
+            attachments = cls._parse_content_attachments(data)
+            if attachments:
+                item['attachments'] = attachments
+
+            content = [item]
+            copy_history = data.get('copy_history')
+            if copy_history is not None:
+                if is_copy_history:
+                    raise VkApiParsingError('a post from the history has its own copy_history')
+                for post in copy_history:
+                    content.append(cls._parse_content(post, True)[0])
             return content
         except KeyError:
             raise VkApiParsingError('no text or invalid a copy_history')
+
+    @staticmethod
+    def _parse_content_attachments(data):
+        res = []
+        attachments_data = data.get('attachments')
+        if not attachments_data:
+            return res
+        for att in attachments_data:
+            type_ = att['type']
+            if type_ == 'photo':
+                photo = att['photo']
+                photo_url = photo.get('photo_75')
+                photo_url = photo.get('photo_2560', photo_url)
+                photo_url = photo.get('photo_1280', photo_url)
+                photo_url = photo.get('photo_130', photo_url)
+                photo_url = photo.get('photo_807', photo_url)
+                photo_url = photo.get('photo_604', photo_url)
+                if photo_url is None:
+                    raise VkApiParsingError('no url for the photo')
+                res.append({
+                    'type': 'photo',
+                    'photo': photo_url,
+                })
+            elif type_ == 'video':
+                video = att['video']
+                preview_url = video.get('photo_130')
+                preview_url = video.get('photo_320', preview_url)
+                preview_url = video.get('photo_800', preview_url)
+                preview_url = video.get('photo_640', preview_url)
+                if preview_url is None:
+                    raise VkApiParsingError('no url for the video preview')
+                res.append({
+                    'type': 'video',
+                    'title': video['title'],
+                    'duration': video['duration'],
+                    'views': video['views'],
+                    'preview': preview_url,
+                })
+        return res
 
     @staticmethod
     def _parse_views(data):
