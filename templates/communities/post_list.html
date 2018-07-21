@@ -2,6 +2,7 @@
 {% load math %}
 {% load url_query %}
 {% load inthumanize %}
+{% load community_tags %}
 {% block content %}
 <div>
     <form action="{% url 'communities:post_list' %}" method="get">
@@ -28,10 +29,10 @@
             </div>
         </div>
         <div>
-            <div>{{ p.content|first }}</div>
+            <div>{{ p.content|first|postcontent2str }}</div>
             <div>
-            {% for text in p.content|slice:'1:' %}
-                <div>{{ text }}</div>
+            {% for postcontent in p.content|slice:'1:' %}
+                <div>{{ postcontent|postcontent2str }}</div>
             {% endfor %}
             </div>
         </div>

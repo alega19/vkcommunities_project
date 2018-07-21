@@ -42,3 +42,12 @@ def verified2str(verified):
         return '(V)'
     else:
         return '(N)'
+
+@register.filter
+def postcontent2str(postcontent):
+    if isinstance(postcontent, str):
+        return postcontent
+    elif isinstance(postcontent, dict):
+        return postcontent['text']
+    else:
+        raise ValueError('unexpected content_item = {0}'.format(postcontent))
