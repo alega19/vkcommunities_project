@@ -3,11 +3,12 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, transaction, connection
+from django.db.models.expressions import RawSQL
 from django.utils import timezone
 
 
 def convert_post_content_to_new_format(apps, schema_editor):
-    batch_size = 10000
+    batch_size = 5000
     updates_per_vacuum = 500000
     Post = apps.get_model('communities', 'Post')
     now = timezone.now()
@@ -15,9 +16,12 @@ def convert_post_content_to_new_format(apps, schema_editor):
     updated = 0
     updated_after_vacuum = 0
     while True:
-        posts = Post.objects.filter(
+        posts = Post.objects.annotate(
+            has_old_format=RawSQL("""jsonb_array_length("content") > 0 and not ("content"->0 ? 'text')""", ())
+        ).filter(
             checked_at__lt=now,
             published_at__lte=updated_post_pub_time_min,
+            has_old_format=True
         ).order_by(
             '-published_at'
         ).only(
@@ -25,34 +29,30 @@ def convert_post_content_to_new_format(apps, schema_editor):
         )[:batch_size]
         posts = list(posts)
 
-        changed_posts = []
-        for p in posts:
-            content = p.content
-            if len(content) and isinstance(content[0], str):
-                content = [{'text': text} for text in content]
-                p.content = content
-                changed_posts.append(p)
-
         with transaction.atomic():
-            for p in changed_posts:
+            for p in posts:
+                p.content = [{'text': text} for text in p.content]
                 p.save(update_fields=['content'])
 
-        updated_post_pub_time_min = posts[-1].published_at
-        updated_after_vacuum += len(posts)
         updated += len(posts)
-        if updated_after_vacuum >= updates_per_vacuum:
-            print('{} rows updated'.format(updated))
-            vacuum()
-            updated_after_vacuum = 0
-        elif len(posts) < batch_size:
+
+        if len(posts) < batch_size:
             print('{} rows updated'.format(updated))
             vacuum()
             break
 
+        updated_after_vacuum += len(posts)
+        if updated_after_vacuum >= updates_per_vacuum:
+            print('{} rows updated'.format(updated))
+            vacuum()
+            updated_after_vacuum = 0
+
+        updated_post_pub_time_min = posts[-1].published_at
+
 
 def vacuum():
     with connection.cursor() as c:
-        c.execute('VACUUM;')
+        c.execute('VACUUM communities_post;')
 
 
 class Migration(migrations.Migration):
