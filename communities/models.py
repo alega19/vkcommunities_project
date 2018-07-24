@@ -36,29 +36,6 @@ class ExtraQuerySet(models.QuerySet):
         }
         return self.filter(**params)
 
-    def search(self, text, *field_names, config='russian'):
-        # Django's SearchVector does't work with jsonb
-        if not text:
-            return self
-        query = Func(Value(config), Value(text), function='plainto_tsquery')
-        expressions = [
-            Func(Value(config), F(fn), template="COALESCE(to_tsvector(%(expressions)s), ''::tsvector)")
-            for fn in field_names
-        ]
-        return self.annotate(
-            query_size_annotation=Func(
-                query,
-                function='numnode',
-                output_field=models.IntegerField()
-            ),
-            found_annotation=Separator(
-                '@@',
-                Separator('||', *expressions),
-                query,
-                output_field=models.BooleanField()
-            )
-        ).filter(Q(found_annotation=True) | Q(query_size_annotation=0))
-
 
 class AvailableCommunityManager(models.Manager.from_queryset(ExtraQuerySet)):
 
@@ -130,8 +107,8 @@ class CommunityHistory(models.Model):
     followers = models.PositiveIntegerField()
 
 
-class PostManager(models.Manager.from_queryset(ExtraQuerySet)):
-
+class PostQuerySet(ExtraQuerySet):
+    
     # This expression has an index.
     # Since PostgreSQL requires the expressions in index and query to match it is necessary to use raw SQL.
     # Even the different ordering of arguments in an AND-expression makes the index useless.
@@ -141,9 +118,28 @@ class PostManager(models.Manager.from_queryset(ExtraQuerySet)):
     )
 
     def with_likes_per_view(self):
-        return super().get_queryset().annotate(
+        return self.annotate(
             post_likes_per_view=RawSQL(self.POST_LIKES_PER_VIEW_EXPRESSION, (), output_field=models.FloatField())
         )
+
+    def search(self, query):
+        if not query:
+            return self
+
+        tsquery = Func(Value('russian'), Value(query), function='plainto_tsquery')
+        return self.annotate(
+            query_size_annotation=Func(
+                tsquery,
+                function='numnode',
+                output_field=models.IntegerField()
+            ),
+            found_annotation=Separator(
+                '@@',
+                Func(Value('russian'), F('content'), function='post_content_to_tsvector'),
+                tsquery,
+                output_field=models.BooleanField()
+            )
+        ).filter(Q(query_size_annotation=0) | Q(found_annotation=True))
 
 
 class Post(models.Model):
@@ -160,8 +156,16 @@ class Post(models.Model):
     marked_as_ads = models.BooleanField()
     links = models.PositiveSmallIntegerField()
 
-    objects = PostManager()
+    objects = PostQuerySet.as_manager()
 
     def save(self, *args, **kwargs):
         self.id = self.community_id * 2147483648 + self.vkid
         super().save(*args, **kwargs)
+
+
+# for old migrations
+class PostManager(models.Manager.from_queryset(PostQuerySet)):
+    POST_LIKES_PER_VIEW_EXPRESSION = (
+        'CASE WHEN ("communities_post"."views" IS NOT NULL AND "communities_post"."views" <> 0) '
+        'THEN ("communities_post"."likes"::double precision / "communities_post"."views"::double precision) END'
+    )

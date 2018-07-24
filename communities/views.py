@@ -110,7 +110,7 @@ def post_list(req):
         views__lte=params['views_max'],
         post_likes_per_view__gte=params['likes_per_view_min'],
         post_likes_per_view__lte=params['likes_per_view_max'],
-    ).search(params['search'], 'content')
+    ).search(params['search'])
     if params['has_links'] is True:
         qs = qs.exclude(links=0)
     elif params['has_links'] is False:
