@@ -1,0 +1,8 @@
+{% load community_tags %}
+{% with attachment_type=attachment|get_item:'type' %}
+    {% if attachment_type == 'photo' %}
+        {% include 'communities/attachments/photo_snippet.html' with photo=attachment %}
+    {% elif attachment_type == 'video' %}
+        {% include 'communities/attachments/video_snippet.html' with video=attachment %}
+    {% endif %}
+{% endwith %}

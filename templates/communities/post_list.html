@@ -16,8 +16,8 @@
     {% endif %}
 </div>
 <div>
-{% for p in page %}
-{% include 'communities/post_snippet.html' with post=p %}
+{% for post in page %}
+    {% include 'communities/post_snippet.html' %}
 {% endfor %}
 </div>
 {% endblock %}

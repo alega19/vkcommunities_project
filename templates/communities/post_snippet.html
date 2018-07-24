@@ -14,12 +14,8 @@
             <div>{{ post.content|first|get_item:'text' }}</div>
             {% if 'attachments' in post.content|first %}
             <div>
-            {% for att in post.content|first|get_item:'attachments' %}
-                {% if att|get_item:'type' == 'photo' %}
-                {% include 'communities/attachments/photo_snippet.html' with photo=att %}
-                {% elif att|get_item:'type' == 'video' %}
-                {% include 'communities/attachments/video_snippet.html' with video=att %}
-                {% endif %}
+            {% for attachment in post.content|first|get_item:'attachments' %}
+                {% include 'communities/attachments/attachment_snippet.html' %}
             {% endfor %}
             </div>
             {% endif %}
@@ -27,6 +23,13 @@
         <div>
         {% for content_item in post.content|slice:'1:' %}
             <div>{{ content_item|get_item:'text' }}</div>
+            {% if 'attachments' in content_item %}
+            <div>
+            {% for attachment in content_item|get_item:'attachments' %}
+                {% include 'communities/attachments/attachment_snippet.html' %}
+            {% endfor %}
+            </div>
+            {% endif %}
         {% endfor %}
         </div>
     </div>
