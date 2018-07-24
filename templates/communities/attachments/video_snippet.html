@@ -1,0 +1,6 @@
+{% load community_tags %}
+<div>
+    <img src="{{ video|get_item:'preview' }}">
+    <div>{{ video|get_item:'title' }} [{{ video|get_item:'duration'|duration2str }}]</div>
+    <div>{{ video|get_item:'views' }}</div>
+</div>

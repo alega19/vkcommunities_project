@@ -1,8 +1,5 @@
 {% extends 'base.html' %}
-{% load math %}
 {% load url_query %}
-{% load inthumanize %}
-{% load community_tags %}
 {% block content %}
 <div>
     <form action="{% url 'communities:post_list' %}" method="get">
@@ -20,32 +17,7 @@
 </div>
 <div>
 {% for p in page %}
-    <div>
-        <div>
-            <div><img src="{{ p.community.icon50url }}"></div>
-            <div>
-                <div>{{ p.community.name }}</div>
-                <div>{{ p.published_at|date:'Y/n/j G:i' }}</div>
-            </div>
-        </div>
-        <div>
-            <div>{{ p.content|first|postcontent2str }}</div>
-            <div>
-            {% for postcontent in p.content|slice:'1:' %}
-                <div>{{ postcontent|postcontent2str }}</div>
-            {% endfor %}
-            </div>
-        </div>
-        <div>
-            <span>{{ p.likes|intspace }}</span>
-            <span>{{ p.shares|intspace }}</span>
-            <span>{% if p.views is not None %}{{ p.views|intspace }}{% else %}N/A{% endif %}</span>
-            <span>{{ p.comments|intspace }}</span>
-        </div>
-        <div>
-            <span>{% if p.post_likes_per_view is not None %}{{ p.post_likes_per_view|multiply:1000|intformat:2|intspace }}{% else %}N/A{% endif %}</span>
-        </div>
-    </div>
+{% include 'communities/post_snippet.html' with post=p %}
 {% endfor %}
 </div>
 {% endblock %}

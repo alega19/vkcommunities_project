@@ -1,0 +1,42 @@
+{% load math %}
+{% load inthumanize %}
+{% load community_tags %}
+<div>
+    <div>
+        <div><img src="{{ post.community.icon50url }}"></div>
+        <div>
+            <div>{{ post.community.name }}</div>
+            <div>{{ post.published_at|date:'Y/n/j G:i' }}</div>
+        </div>
+    </div>
+    <div>
+        <div>
+            <div>{{ post.content|first|get_item:'text' }}</div>
+            {% if 'attachments' in post.content|first %}
+            <div>
+            {% for att in post.content|first|get_item:'attachments' %}
+                {% if att|get_item:'type' == 'photo' %}
+                {% include 'communities/attachments/photo_snippet.html' with photo=att %}
+                {% elif att|get_item:'type' == 'video' %}
+                {% include 'communities/attachments/video_snippet.html' with video=att %}
+                {% endif %}
+            {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div>
+        {% for content_item in post.content|slice:'1:' %}
+            <div>{{ content_item|get_item:'text' }}</div>
+        {% endfor %}
+        </div>
+    </div>
+    <div>
+        <span>{{ post.likes|intspace }}</span>
+        <span>{{ post.shares|intspace }}</span>
+        <span>{% if post.views is not None %}{{ post.views|intspace }}{% else %}N/A{% endif %}</span>
+        <span>{{ post.comments|intspace }}</span>
+    </div>
+    <div>
+        <span>{% if post.post_likes_per_view is not None %}{{ post.post_likes_per_view|multiply:1000|intformat:2|intspace }}{% else %}N/A{% endif %}</span>
+    </div>
+</div>

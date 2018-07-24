@@ -1,3 +1,5 @@
+from datetime import time as Time
+
 from django import template
 
 from ..models import Community
@@ -43,11 +45,20 @@ def verified2str(verified):
     else:
         return '(N)'
 
+
 @register.filter
-def postcontent2str(postcontent):
-    if isinstance(postcontent, str):
-        return postcontent
-    elif isinstance(postcontent, dict):
-        return postcontent['text']
+def get_item(dictionary, key):
+    return dictionary[key]
+
+
+@register.filter
+def duration2str(seconds):
+    t = Time(
+        hour=seconds // 3600,
+        minute=(seconds // 60) % 60,
+        second=seconds % 60
+    )
+    if t.hour:
+        return t.strftime('%H:%M:%S')
     else:
-        raise ValueError('unexpected content_item = {0}'.format(postcontent))
+        return t.strftime('%M:%S')
