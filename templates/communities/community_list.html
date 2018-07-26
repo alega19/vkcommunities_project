@@ -1,13 +1,41 @@
-{% extends 'base.html' %}
+{% extends 'communities/base.html' %}
+{% load static %}
 {% load math %}
 {% load url_query %}
 {% load inthumanize %}
 {% load community_tags %}
-{% block content %}
-<div>
-    <form action="{% url 'communities:community_list' %}" method="get">
-        {{ form }}
-        <input type="submit" name="submit" value="ok">
+{% block communities_content %}
+<div class="filter">
+    <form name="filter" action="{% url 'communities:community_list' %}" method="get">
+        <div class="filter__item">
+            <label class="filter__label">Verified</label>
+            <div class="filter__field">{{ form.verified }}</div>
+        </div>
+        <div class="filter__item">
+            <label class="filter__label">Type</label>
+            <div class="filter__field">{{ form.ctype }}</div>
+        </div>
+        <div class="filter__item">
+            <label class="filter__label">Age limit</label>
+            <div class="filter__field">{{ form.age_limit }}</div>
+        </div>
+        <div id="followers-range-widget" class="filter__item">
+            <label class="filter__label">Followers<span class="filter__sorting-icon"></span></label>
+            <div class="filter__field">{{ form.followers_min }}</div> - <div class="filter__field">{{ form.followers_max }}</div>
+        </div>
+        <div id="views-range-widget" class="filter__item">
+            <label class="filter__label">Views (per post)<span class="filter__sorting-icon"></span></label>
+            <div class="filter__field">{{ form.views_per_post_min }}</div> - <div class="filter__field">{{ form.views_per_post_max }}</div>
+        </div>
+        <div id="likes-range-widget" class="filter__item">
+            <label class="filter__label">Likes (per 1K views)<span class="filter__sorting-icon"></span></label>
+            <div class="filter__field">{{ form.likes_per_view_min }}</div> - <div class="filter__field">{{ form.likes_per_view_max }}</div>
+        </div>
+        <div class="filter__hidden-item">{{ form.sort_by }}</div>
+        <div class="filter__hidden-item">{{ form.inverse }}</div>
+        <div class="filter__item">
+            <div class="filter__field"><input type="submit" name="submit" value="FILTER"></div>
+        </div>
     </form>
 </div>
 <div>
@@ -46,4 +74,5 @@
     </tr>
 {% endfor %}
 </table>
+<script src="{% static 'communities/scripts/community_list.js' %}"></script>
 {% endblock %}

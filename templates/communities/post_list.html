@@ -1,10 +1,40 @@
-{% extends 'base.html' %}
+{% extends 'communities/base.html' %}
+{% load static %}
 {% load url_query %}
-{% block content %}
-<div>
-    <form action="{% url 'communities:post_list' %}" method="get">
-        {{ form }}
-        <input type="submit" name="submit" value="ok">
+{% block communities_content %}
+<div class="filter">
+    <form name="filter" action="{% url 'communities:post_list' %}" method="get">
+        <div class="filter__item">
+            <label class="filter__label">Community</label>
+            <div class="filter__field">{{ form.community_id }}</div>
+        </div>
+        <div id="date-range-widget" class="filter__item">
+            <label class="filter__label">Date<span class="filter__sorting-icon"></span></label>
+            <div class="filter__field">{{ form.date_min }}</div> - <div class="filter__field">{{ form.date_max }}</div>
+        </div>
+        <div id="views-range-widget" class="filter__item">
+            <label class="filter__label">Views<span class="filter__sorting-icon"></span></label>
+            <div class="filter__field">{{ form.views_min }}</div> - <div class="filter__field">{{ form.views_max }}</div>
+        </div>
+        <div id="likes-range-widget" class="filter__item">
+            <label class="filter__label">Likes (per 1K views)<span class="filter__sorting-icon"></span></label>
+            <div class="filter__field">{{ form.likes_per_view_min }}</div> - <div class="filter__field">{{ form.likes_per_view_max }}</div>
+        </div>
+        <div class="filter__item">
+            <label class="filter__label">Ads mark</label>
+            <div class="filter__field">{{ form.marked_as_ads }}</div>
+        </div>
+        <div class="filter__item">
+            <label class="filter__label">Links</label>
+            <div class="filter__field">{{ form.has_links }}</div>
+        </div>
+        <div class="filter__hidden-item">{{ form.sort_by }}</div>
+        <div class="filter__hidden-item">{{ form.inverse }}</div>
+        <div class="filter__search-item">
+            <label class="filter__search-label">Search</label>
+            <div class="filter__search-field">{{ form.search }}</div>
+            <div class="filter__field"><input type="submit" name="submit" value="FILTER"></div>
+        </div>
     </form>
 </div>
 <div>
@@ -15,9 +45,10 @@
     <a href="{% url 'communities:post_list' %}?{% url_query p=page.next_page_number %}">NEXT-&gt;</a>
     {% endif %}
 </div>
-<div>
+<div class="post-list">
 {% for post in page %}
     {% include 'communities/post_snippet.html' %}
 {% endfor %}
 </div>
+<script src="{% static 'communities/scripts/post_list.js' %}"></script>
 {% endblock %}

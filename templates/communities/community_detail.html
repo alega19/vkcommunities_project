@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'communities/base.html' %}
 {% load static %}
 {% load json %}
 {% load url_query %}
@@ -9,7 +9,7 @@
     var followers_history = {{ followers_history | json | safe }};
 {% endblock %}
 {% block title %}{{ community.name }}{% endblock %}
-{% block content %}
+{% block communities_content %}
 <div>
     <div>
         <img src="{{ community.icon50url }}">
