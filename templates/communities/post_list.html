@@ -1,5 +1,6 @@
 {% extends 'communities/base.html' %}
 {% load static %}
+{% load range %}
 {% load url_query %}
 {% block communities_content %}
 <div class="filter">
@@ -37,13 +38,14 @@
         </div>
     </form>
 </div>
-<div>
-    {% if page.has_previous %}
-    <a href="{% url 'communities:post_list' %}?{% url_query p=page.previous_page_number %}">&lt;-PREVIOUS</a>
+<div class="pagination">
+{% for n in page.paginator.num_pages|range %}
+    {% if n|add:1 == page.number %}
+        <span class="pagination__page-btn pagination__page-btn--active">{{ n|add:1 }}</span>
+    {% else %}
+        <a class="pagination__page-btn" href="{% url 'communities:post_list' %}?{% url_query p=n|add:1 %}">{{ n|add:1 }}</a>
     {% endif %}
-    {% if page.has_next %}
-    <a href="{% url 'communities:post_list' %}?{% url_query p=page.next_page_number %}">NEXT-&gt;</a>
-    {% endif %}
+{% endfor %}
 </div>
 <div class="post-list">
 {% for post in page %}

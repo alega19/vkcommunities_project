@@ -17,6 +17,10 @@ input, select, option {
   text-align: inherit;
 }
 
+a {
+  text-decoration: inherit;
+}
+
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -93,6 +97,28 @@ input[type=number]::-webkit-outer-spin-button {
   border-radius: 2px;
   width: 298px;
   height: 22px;
+}
+
+.pagination {
+  padding: 12px;
+}
+
+.pagination__page-btn {
+  display: inline-block;
+  margin-right: 4px;
+  border: 1px solid #d3d9de;
+  border-radius: 2px;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  line-height: 1.5em;
+  font-size: 15px;
+  font-weight: 500;
+  color: #000;
+}
+
+.pagination__page-btn--active {
+  background-color: #dddddd;
 }
 
 .post-list {
