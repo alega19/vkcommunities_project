@@ -5,6 +5,16 @@
 {% load url_query %}
 {% load inthumanize %}
 {% load community_tags %}
+{% block menu %}
+<div class="menu">
+    <div class="menu__communities">COMMUNITIES</div>
+    <a href="{% url 'communities:post_list' %}"><div class="menu__posts">POSTS</div></a>
+    <form class="menu__logout" action="{% url 'accounts:logout' %}" method="post">
+        {% csrf_token %}
+        <input name="submit" type="submit" value="LOGOUT">
+    </form>
+</div>
+{% endblock %}
 {% block communities_content %}
 <div class="filter">
     <form name="filter" action="{% url 'communities:community_list' %}" method="get">
@@ -35,7 +45,7 @@
         <div class="filter__hidden-item">{{ form.sort_by }}</div>
         <div class="filter__hidden-item">{{ form.inverse }}</div>
         <div class="filter__item">
-            <div class="filter__field"><input type="submit" name="submit" value="FILTER"></div>
+            <div class="filter__field"><input class="filter__btn" type="submit" name="submit" value="FILTER"></div>
         </div>
     </form>
 </div>
@@ -48,33 +58,39 @@
     {% endif %}
 {% endfor %}
 </div>
-<table>
-    <tr>
-        <th></th>
-        <th>Name</th>
-        <th>Followers</th>
-        <th>Views/post</th>
-        <th>Likes/1K views</th>
-        <th></th>
-    </tr>
-{% for c in page %}
-    <tr>
-        <td>
-            <div><img src="{{ c.icon100url }}"></div>
-            <div>
-                <span>{{ c.verified | verified2str }}</span>
-                <span>{{ c.ctype | type2str }}</span>
-                <span>{{ c.age_limit | age_limit2str }}</span>
-            </div>
-            <div><a href="{{ c.vk_url }}">link</a></div>
-        </td>
-        <td>{{ c.name }}</td>
-        <td>{% if c.followers is not None %}{{ c.followers | intformat:2 | intspace }}{% endif %}</td>
-        <td>{% if c.views_per_post is not None %}{{ c.views_per_post | intformat:2 | intspace }}{% endif %}</td>
-        <td>{% if c.likes_per_view is not None %}{{ c.likes_per_view | multiply:1000 | intformat:2 }}{% endif %}</td>
-        <td><a href="{% url 'communities:community_detail' c.vkid %}">more</a></td>
-    </tr>
-{% endfor %}
-</table>
+<div class="comm-list">
+    <table class="comm-list__table">
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Followers</th>
+            <th>Views/post</th>
+            <th>Likes/1K views</th>
+            <th></th>
+        </tr>
+    {% for c in page %}
+        <tr>
+            <td class="comm-list__logo">
+                <a href="{{ c.vk_url }}"><img src="{{ c.icon100url }}"></a>
+                <div class="comm-list__attr-panel">
+                    <span class="comm-list__attr-icon">{{ c.ctype | type2str }}</span>
+                    {% if c.age_limit|age_limit2str %}<span class="comm-list__attr-icon">{{ c.age_limit|age_limit2str }}</span>{% endif %}
+                </div>
+            </td>
+            <td class="comm-list__name">
+                {% if c.verified %}<span class="comm-list__verified-icon"></span>{% endif %}
+                <a href="{{ c.vk_url }}">{{ c.name }}</a>
+            </td>
+            <td class="comm-list--nowrap">{% if c.followers is not None %}{{ c.followers | intformat:2 | intspace }}{% endif %}</td>
+            <td>{% if c.views_per_post is not None %}{{ c.views_per_post | intformat:2 | intspace }}{% endif %}</td>
+            <td>{% if c.likes_per_view is not None %}{{ c.likes_per_view | multiply:1000 | intformat:2 }}{% endif %}</td>
+            <td>
+                <a class="comm-list__info-icon" href="{% url 'communities:community_detail' c.vkid %}"></a>
+                <a class="comm-list__post-icon" href="{% url 'communities:post_list' %}?community_id={{ c.vkid }}&sort_by=published_at&inverse=on"></a>
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+</div>
 <script src="{% static 'communities/scripts/community_list.js' %}"></script>
 {% endblock %}

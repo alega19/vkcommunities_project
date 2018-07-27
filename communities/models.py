@@ -162,6 +162,9 @@ class Post(models.Model):
         self.id = self.community_id * 2147483648 + self.vkid
         super().save(*args, **kwargs)
 
+    def vk_url(self):
+        return r'https://vk.com/wall-{0:d}_{1:d}'.format(self.community_id, self.vkid)
+
 
 # for old migrations
 class PostManager(models.Manager.from_queryset(PostQuerySet)):

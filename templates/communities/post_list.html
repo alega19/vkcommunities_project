@@ -2,6 +2,16 @@
 {% load static %}
 {% load range %}
 {% load url_query %}
+{% block menu %}
+<div class="menu">
+    <a href="{% url 'communities:community_list' %}"><div class="menu__communities">COMMUNITIES</div></a>
+    <div class="menu__posts">POSTS</div>
+    <form class="menu__logout" action="{% url 'accounts:logout' %}" method="post">
+        {% csrf_token %}
+        <input name="submit" type="submit" value="LOGOUT">
+    </form>
+</div>
+{% endblock %}
 {% block communities_content %}
 <div class="filter">
     <form name="filter" action="{% url 'communities:post_list' %}" method="get">
@@ -34,7 +44,7 @@
         <div class="filter__search-item">
             <label class="filter__search-label">Search</label>
             <div class="filter__search-field">{{ form.search }}</div>
-            <div class="filter__field"><input type="submit" name="submit" value="FILTER"></div>
+            <div class="filter__field"><input class="filter__btn" type="submit" name="submit" value="FILTER"></div>
         </div>
     </form>
 </div>

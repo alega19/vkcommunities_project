@@ -15,10 +15,14 @@ input, select, option {
   font: inherit;
   padding: 0;
   text-align: inherit;
+  background-color: inherit;
+  color: inherit;
+  cursor: inherit;
 }
 
 a {
   text-decoration: inherit;
+  color: inherit;
 }
 
 input[type=number]::-webkit-inner-spin-button,
@@ -28,8 +32,25 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .menu {
-  height: 100px;
+  padding: 20px 12px;
   background-color: #4a76a8;
+}
+
+.menu__communities, .menu__posts, .menu__logout {
+  display: inline-block;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  width: 118px;
+  height: 22px;
+  text-align: center;
+  line-height: 22px;
+  color: #fff;
+  padding: 2px;
+}
+
+.menu__logout {
+  float: right;
+  cursor: pointer;
 }
 
 .filter {
@@ -99,6 +120,12 @@ input[type=number]::-webkit-outer-spin-button {
   height: 22px;
 }
 
+.filter__btn {
+  color: #4a76a8;
+  border: 1px solid #4a76a8;
+  cursor: pointer;
+}
+
 .pagination {
   padding: 12px;
 }
@@ -119,6 +146,123 @@ input[type=number]::-webkit-outer-spin-button {
 
 .pagination__page-btn--active {
   background-color: #dddddd;
+}
+
+.comm-list {
+  padding: 0 12px;
+}
+
+.comm-list--nowrap {
+  white-space: nowrap;
+}
+
+.comm-list__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.comm-list__logo {
+  position: relative;
+  height: 100px;
+}
+
+.comm-list__attr-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 2px;
+  background: rgba(0,0,0,.4);
+  color: #fff;
+}
+
+.comm-list__attr-icon {
+  display: inline-block;
+  margin-right: 4px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 16px;
+}
+
+.comm-list__verified-icon {
+  display: inline-block;
+  margin-right: 0.5em;
+  width: 1em;
+  height: 1em;
+  background: url(/static/communities/images/verified.svg) no-repeat;
+}
+
+.comm-list__name {
+  color: #2a5885;
+}
+
+.comm-list__info-icon {
+  display: inline-block;
+  margin-right: 0.5em;
+  width: 1.5em;
+  height: 1.5em;
+  background: url(/static/communities/images/info.svg) no-repeat;
+}
+
+.comm-list__post-icon {
+  display: inline-block;
+  margin-right: 0.5em;
+  width: 1.5em;
+  height: 1.5em;
+  background: url(/static/communities/images/post.svg) no-repeat;
+}
+
+.comm-details__header {
+  padding: 15px 20px 0;
+}
+
+.comm-details__icon {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border-radius: 5%;
+  overflow: hidden;
+}
+
+.comm-details__info {
+  display: inline-block;
+  vertical-align: top;
+  padding-left: 15px;
+  padding-top: 8px;
+}
+
+.comm-details__name {
+  display: block;
+  font-weight: 700;
+  color: #2a5885;
+}
+
+.comm-details__status {
+  padding-top: 3px;
+  font-size: 12.5px;
+  color: #939393;
+}
+
+.comm-details__params {
+  padding: 10px 20px;
+}
+
+.comm-details__find-posts {
+  display: inline-block;
+  margin: 8px 20px;
+  border: 1px solid #2a5885;
+  border-radius: 2px;
+  padding: 2px 4px;
+  color: #2a5885;
+}
+
+.comm-details__description {
+  margin: 10px 20px;
+  border: 1px solid #939393;
+  text-indent: 2em;
+}
+
+.comm-details__graph {
+  padding: 12px;
 }
 
 .post-list {

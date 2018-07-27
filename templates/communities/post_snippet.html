@@ -4,10 +4,10 @@
 {% load community_tags %}
 <div class="post">
     <div class="post__header">
-        <div class="post__icon"><img width="100%" height="100%" src="{{ post.community.icon50url }}"></div>
+        <a href="{{ post.community.vk_url }}"><div class="post__icon"><img width="100%" height="100%" src="{{ post.community.icon50url }}"></div></a>
         <div class="post__info">
-            <div class="post__community-name">{{ post.community.name }}</div>
-            <div class="post__publish-time">{{ post.published_at|date:'Y/n/j G:i' }}</div>
+            <a href="{{ post.community.vk_url }}"><div class="post__community-name">{{ post.community.name }}</div></a>
+            <a href="{{ post.vk_url }}"><div class="post__publish-time">{{ post.published_at|date:'Y/n/j G:i' }}</div></a>
         </div>
     </div>
     <div class="post__content">
