@@ -21,7 +21,7 @@ class PasswordField(forms.CharField):
 
 class UserPasswordForm(forms.ModelForm):
     password1 = PasswordField()
-    password2 = PasswordField()
+    password2 = PasswordField(widget=forms.PasswordInput(attrs={'placeholder': 'Repeat password'}))
 
     def clean(self):
         password1 = self.cleaned_data.get('password1')
@@ -45,6 +45,7 @@ class SignupForm(UserPasswordForm):
     class Meta:
         model = User
         fields = ['email']
+        widgets = {'email': forms.EmailInput(attrs={'placeholder': 'Email'})}
 
     def clean(self):
         super().clean()

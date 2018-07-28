@@ -408,17 +408,17 @@ input[type=number]::-webkit-outer-spin-button {
   color: #67707a;
 }
 
-.login {
+.login, .signup {
   margin: 20% auto 0;
   width: 260px;
 }
 
-.login__form {
+.login__form, .signup__form {
   width: 100%;
   text-align: center;
 }
 
-.login__email, .login__password, .login__btn {
+.login__email, .login__password, .login__btn, .signup__email, .signup__password, .signup__btn {
   margin-bottom: 12px;
   border: 2px solid #2a5885;
   border-radius: 4px;
@@ -426,7 +426,7 @@ input[type=number]::-webkit-outer-spin-button {
   text-align: center;
 }
 
-.login__btn {
+.login__btn, .signup__btn {
   display: inline-block;
   width: 120px;
   cursor: pointer;
