@@ -2,9 +2,11 @@
 
 {% block title %}Recover an account{% endblock %}
 {% block content %}
-<form action="{{ request.path }}" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" name="submit" value="Recover">
-</form>
+<div class="recover">
+    <form class="recover__form" action="{{ request.path }}" method="post">
+        {% csrf_token %}
+        <div class="recover__email">{{ form.email }}</div>
+        <input class="recover__btn" type="submit" name="submit" value="Recover">
+    </form>
+</div>
 {% endblock %}
