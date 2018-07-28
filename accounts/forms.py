@@ -6,13 +6,17 @@ from .models import User
 
 
 class EmailField(forms.EmailField):
+    widget = forms.EmailInput(attrs={'placeholder': 'Email'})
+
     def __init__(self, *args, **kwargs):
         super().__init__(max_length=254, *args, **kwargs)
 
 
 class PasswordField(forms.CharField):
+    widget = forms.PasswordInput(attrs={'placeholder': 'Password'})
+
     def __init__(self, *args, **kwargs):
-        super().__init__(max_length=50, widget=forms.PasswordInput(), *args, **kwargs)
+        super().__init__(max_length=50, *args, **kwargs)
 
 
 class UserPasswordForm(forms.ModelForm):
