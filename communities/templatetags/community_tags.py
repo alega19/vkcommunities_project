@@ -27,7 +27,7 @@ def age_limit2str(age_limit):
     if age_limit == Community.AGELIMIT_UNKNOWN:
         return ''
     elif age_limit == Community.AGELIMIT_NONE:
-        return '0+'
+        return ''
     elif age_limit == Community.AGELIMIT_16:
         return '16+'
     elif age_limit == Community.AGELIMIT_18:

@@ -1,6 +1,13 @@
+{% load inthumanize %}
 {% load community_tags %}
-<div>
-    <img src="{{ video|get_item:'preview' }}">
-    <div>{{ video|get_item:'title' }} [{{ video|get_item:'duration'|duration2str }}]</div>
-    <div>{{ video|get_item:'views' }}</div>
+<div class="post__video">
+    <div class="post__video-preview">
+        <img width="100%" src="{{ video|get_item:'preview' }}">
+        <div class="post__video-play"></div>
+        <div class="post__video-duration">{{ video|get_item:'duration'|duration2str }}</div>
+    </div>
+    <div class="post__video-info">
+        <div class="post__video-title">{{ video|get_item:'title' }}</div>
+        <div class="post__video-views">{{ video|get_item:'views'|intspace }} views</div>
+    </div>
 </div>
