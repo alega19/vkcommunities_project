@@ -3,6 +3,34 @@ from django.test import TestCase
 from ..models import Community
 
 
+class ExtraQuerySetTest(TestCase):
+
+    def test_sort_by(self):
+        Community.objects.create(vkid=1, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        Community.objects.create(vkid=2, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        Community.objects.create(vkid=3, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        Community.objects.create(vkid=4, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        self.assertQuerysetEqual(Community.available.sort_by('vkid', True), [4, 3, 2, 1], lambda c: c.vkid)
+
+    def test_exclude_nulls(self):
+        Community.objects.create(vkid=1, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        Community.objects.create(vkid=2, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE, followers=42)
+        self.assertQuerysetEqual(Community.available.exclude_nulls('followers'), [2], lambda c: c.vkid)
+
+    def test_filter_ignoring_nonetype(self):
+        Community.objects.create(vkid=1, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE, followers=11)
+        Community.objects.create(vkid=2, deactivated=False, ctype=Community.TYPE_OPEN_GROUP, followers=22)
+        Community.objects.create(vkid=3, deactivated=False, ctype=Community.TYPE_CLOSED_GROUP)
+        self.assertQuerysetEqual(
+            Community.available.filter_ignoring_nonetype(
+                ctype__in=(Community.TYPE_PUBLIC_PAGE, Community.TYPE_CLOSED_GROUP),
+                followers=None,
+            ).order_by('vkid'),
+            [1, 3],
+            lambda c: c.vkid
+        )
+
+
 class CommunityTest(TestCase):
 
     def test_vk_url(self):
