@@ -1,6 +1,7 @@
 from django.test import TestCase
+from django.utils import timezone
 
-from ..models import Community
+from ..models import Community, Post
 
 
 class ExtraQuerySetTest(TestCase):
@@ -58,3 +59,21 @@ class CommunityTest(TestCase):
         available_communities = Community.available.order_by('vkid')
         available_community_ids = [c.vkid for c in available_communities]
         self.assertEqual(available_community_ids, [1, 2, 3])
+
+
+class PostTest(TestCase):
+
+    def test_with_likes_per_view(self):
+        Community.objects.create(vkid=1, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        params = dict(community_id=1, published_at=timezone.now(), checked_at=timezone.now(),
+                      content=[], shares=0, comments=0, marked_as_ads=False, links=0)
+        Post.objects.create(vkid=1, views=10, likes=5, **params)
+        Post.objects.create(vkid=2, views=0, likes=5, **params)
+        Post.objects.create(vkid=3, views=10, likes=0, **params)
+        Post.objects.create(vkid=4, likes=5, **params)
+        self.assertQuerysetEqual(Post.objects.with_likes_per_view().order_by('vkid'), [500, None, 0, None],
+                                 lambda c: None if c.post_likes_per_view is None else int(c.post_likes_per_view * 1000))
+
+    def test_vk_url(self):
+        p = Post(community_id=11, vkid=22)
+        self.assertEqual(p.vk_url(), 'https://vk.com/wall-11_22')
