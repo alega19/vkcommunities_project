@@ -40,10 +40,7 @@ class ExtraQuerySet(models.QuerySet):
 class AvailableCommunityManager(models.Manager.from_queryset(ExtraQuerySet)):
 
     def get_queryset(self):
-        return super().get_queryset().exclude(
-            deactivated=True,
-            ctype=Community.TYPE_PRIVATE_GROUP,
-        )
+        return super().get_queryset().exclude(deactivated=True).exclude(ctype=Community.TYPE_PRIVATE_GROUP)
 
 
 class Community(models.Model):
