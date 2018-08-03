@@ -9,6 +9,7 @@
             <a href="{{ post.community.vk_url }}"><div class="post__community-name">{{ post.community.name }}</div></a>
             <a href="{{ post.vk_url }}"><div class="post__publish-time">{{ post.published_at|date:'Y/n/j G:i' }}</div></a>
         </div>
+        <a class="post__comm-info-icon" href="{% url 'communities:community_detail' post.community_id %}"></a>
     </div>
     <div class="post__content">
         <div>
