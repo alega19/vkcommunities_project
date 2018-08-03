@@ -12,7 +12,7 @@
     </div>
     <div class="post__content">
         <div>
-            <div class="post__text">{{ post.content|first|get_item:'text' }}</div>
+            <div class="post__text">{{ post.content|first|get_item:'text'|linebreaksbr }}</div>
             {% if 'attachments' in post.content|first %}
             <div>
             {% for attachment in post.content|first|get_item:'attachments' %}
@@ -23,7 +23,7 @@
         </div>
         <div>
         {% for content_item in post.content|slice:'1:' %}
-            <div class="post__text">{{ content_item|get_item:'text' }}</div>
+            <div class="post__text">{{ content_item|get_item:'text'|linebreaksbr }}</div>
             {% if 'attachments' in content_item %}
             <div>
             {% for attachment in content_item|get_item:'attachments' %}
