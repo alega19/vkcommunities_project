@@ -67,6 +67,8 @@ def community_detail(req, community_id):
     community = get_object_or_404(Community, pk=community_id)
     followers_history = list(CommunityHistory.objects.filter(
         community=community,
+    ).order_by(
+        'checked_at'
     ).values(
         x=F('checked_at'),
         y=F('followers'),
