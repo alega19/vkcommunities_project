@@ -50,7 +50,7 @@ def community_list(req):
     ).exclude_nulls(
         params['sort_by']
     ).sort_by(params['sort_by'], params['inverse'])
-    communities = qs[:COMMUNITY_LIST_MAX]
+    communities = list(qs[:COMMUNITY_LIST_MAX])
     paginator = Paginator(communities, COMMUNITY_PAGE_SIZE)
     page_num = req.GET.get('p', 1)
     try:
