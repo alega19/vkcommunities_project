@@ -67,18 +67,20 @@ def cleanup_commhistory():
     num += CommunityHistory.objects.filter(
         checked_at__range=(now - TimeDelta(days=60), now - TimeDelta(days=30)),
         checked_at__day__in=range(2, 31, 2),
+    ).exclude(
+        checked_at__week_day=2,  # Monday
     ).delete()[0]
 
     num += CommunityHistory.objects.filter(
         checked_at__range=(now - TimeDelta(days=180), now - TimeDelta(days=60)),
+        checked_at__day__gt=1,
     ).exclude(
         checked_at__week_day=2,  # Monday
     ).delete()[0]
 
     num += CommunityHistory.objects.filter(
         checked_at__lte=now - TimeDelta(days=180),
-    ).exclude(
-        checked_at__day=1,
+        checked_at__day__gt=1,
     ).delete()[0]
 
     return num
