@@ -44,6 +44,10 @@ LOGGING = {
             'level': 'INFO',
             'handlers': ['console'],
         },
+        'dbcleaner': {
+            'level': 'INFO',
+            'handlers': ['console'],
+        },
         'celery': {
             'level': 'INFO',
             'handlers': ['celery_console'],

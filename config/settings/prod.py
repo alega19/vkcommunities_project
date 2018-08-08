@@ -28,6 +28,16 @@ LOGGING = {
             'backupCount': 240,
             'encoding': 'utf-8',
         },
+        'dbcleaner_file': {
+            'level': 'INFO',
+            'formatter': 'default',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': '/var/log/vkcommunities/dbcleaner',
+            'when': 'H',
+            'interval': 1,
+            'backupCount': 240,
+            'encoding': 'utf-8',
+        },
         'celery_file': {
             'level': 'INFO',
             'formatter': 'celery',
@@ -43,6 +53,10 @@ LOGGING = {
         'datacollector': {
             'level': 'INFO',
             'handlers': ['file'],
+        },
+        'dbcleaner': {
+            'level': 'INFO',
+            'handlers': ['dbcleaner_file'],
         },
         'celery': {
             'level': 'INFO',
