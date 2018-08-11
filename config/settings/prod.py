@@ -5,6 +5,16 @@ DEBUG = False
 
 ALLOWED_HOSTS = get_secret('ALLOWED_HOSTS')
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': None,
+    }
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
