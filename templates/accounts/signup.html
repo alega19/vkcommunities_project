@@ -6,9 +6,23 @@
     <form class="signup__form" action="{{ request.path }}" method="post">
         {% csrf_token %}
         <div class="signup__email">{{ form.email }}</div>
+        {% if form.email.errors %}
+        <div class="signup__errors">
+            {% for err in form.email.errors %}
+            <p>{{ err }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="signup__password">{{ form.password1 }}</div>
         <div class="signup__password">{{ form.password2 }}</div>
         <input class="signup__btn" type="submit" name="submit" value="Sign up">
     </form>
+    {% if form.non_field_errors %}
+    <div class="signup__errors">
+        {% for err in form.non_field_errors %}
+        <p>{{ err }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

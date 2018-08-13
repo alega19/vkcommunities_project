@@ -11,5 +11,12 @@
         <input class="login__btn" type="submit" name="submit" value="Log in">
     </form>
     <a href="{% url 'accounts:recover' %}"><div class="login__recovering-password-btn">I've forgotten the password</div></a>
+    {% if form.non_field_errors %}
+    <div class="login__errors">
+        {% for err in form.non_field_errors %}
+        <p>{{ err }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
