@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.views.decorators.http import require_http_methods, require_POST, require_GET
+from django.views.decorators.http import require_http_methods, require_GET
+from django.views.generic import View
 from django.urls import reverse
 from django.utils.http import is_safe_url, urlsafe_base64_encode, urlsafe_base64_decode
 from django.shortcuts import redirect, render, render_to_response, get_object_or_404
@@ -36,11 +37,6 @@ def signup(req):
 
 
 @require_GET
-def confirm_email_sent(req):
-    return render_to_response('accounts/confirm_email_sent.html')
-
-
-@require_GET
 def activate(req, uidb64, token):
     try:
         email = urlsafe_base64_decode(uidb64).decode('utf-8')
@@ -74,10 +70,11 @@ def login(req):
     return render(req, 'accounts/login.html', {'form': form, 'next_url': next_url})
 
 
-@require_POST
-def logout(req):
-    auth.logout(req)
-    return redirect(reverse(settings.LOGOUT_REDIRECT_URL))
+class LogoutView(View):
+
+    def post(self, req):
+        auth.logout(req)
+        return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
 @require_http_methods(['GET', 'POST'])
@@ -96,11 +93,6 @@ def recover(req):
             user.send_email('Recover your account', message, fail_silently=True)
         return redirect(reverse('accounts:recovery_email_sent'))
     return render(req, 'accounts/recover.html', {'form': form})
-
-
-@require_GET
-def recovery_email_sent(req):
-    return render_to_response('accounts/recovery_email_sent.html')
 
 
 @require_http_methods(['GET', 'POST'])
