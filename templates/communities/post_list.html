@@ -49,8 +49,8 @@
     </form>
 </div>
 <div class="pagination">
-{% for n in page.paginator.num_pages|range %}
-    {% if n|add:1 == page.number %}
+{% for n in page_obj.paginator.num_pages|range %}
+    {% if n|add:1 == page_obj.number %}
         <span class="pagination__page-btn pagination__page-btn--active">{{ n|add:1 }}</span>
     {% else %}
         <a class="pagination__page-btn" href="{% url 'communities:post_list' %}?{% url_query p=n|add:1 %}">{{ n|add:1 }}</a>
@@ -58,7 +58,7 @@
 {% endfor %}
 </div>
 <div class="post-list">
-{% for post in page %}
+{% for post in page_obj %}
     {% include 'communities/post_snippet.html' %}
 {% endfor %}
 </div>

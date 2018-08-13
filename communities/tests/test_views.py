@@ -45,12 +45,12 @@ class CommunityListViewTest(TestCase):
         self.client.login(email=EMAIL, password=PASSWORD)
 
         resp = self.client.get(reverse('communities:community_list'))
-        self.assertTrue('page' in resp.context)
-        self.assertEqual(len(resp.context['page']), 50)
+        self.assertTrue('page_obj' in resp.context)
+        self.assertEqual(len(resp.context['page_obj']), 50)
 
         resp = self.client.get(reverse('communities:community_list') + '?p=2')
-        self.assertTrue('page' in resp.context)
-        self.assertEqual(len(resp.context['page']), 1)
+        self.assertTrue('page_obj' in resp.context)
+        self.assertEqual(len(resp.context['page_obj']), 1)
 
 
 class CommunityDetailViewTest(TestCase):
@@ -113,12 +113,12 @@ class PostListViewTest(TestCase):
         self.client.login(email=EMAIL, password=PASSWORD)
 
         resp = self.client.get(reverse('communities:post_list'))
-        self.assertTrue('page' in resp.context)
-        self.assertEqual(len(resp.context['page']), 20)
+        self.assertTrue('page_obj' in resp.context)
+        self.assertEqual(len(resp.context['page_obj']), 20)
 
         resp = self.client.get(reverse('communities:post_list') + '?p=2')
-        self.assertTrue('page' in resp.context)
-        self.assertEqual(len(resp.context['page']), 1)
+        self.assertTrue('page_obj' in resp.context)
+        self.assertEqual(len(resp.context['page_obj']), 1)
 
     def test_search(self):
         params = dict(community_id=1, published_at=timezone.now(), checked_at=timezone.now(),

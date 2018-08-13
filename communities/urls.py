@@ -4,11 +4,19 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^$', views.community_list, name='community_list'),
+    url(
+        r'^$',
+        views.CommunityListView.as_view(),
+        name='community_list',
+    ),
     url(
         r'^(?P<community_id>[0-9]+)$',
         views.CommunityDetailView.as_view(),
         name='community_detail',
     ),
-    url(r'^posts$', views.post_list, name='post_list'),
+    url(
+        r'^posts$',
+        views.PostListView.as_view(),
+        name='post_list',
+    ),
 ]
