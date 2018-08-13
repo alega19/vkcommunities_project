@@ -1,9 +1,11 @@
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404
 from django.views.decorators.http import require_GET
-from django.shortcuts import get_object_or_404, render
+from django.views.generic import DetailView
+from django.shortcuts import render
 from django.db.models import F
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Community, CommunityHistory, Post
 from .forms import CommunitySearchForm, PostSearchForm
@@ -60,23 +62,21 @@ def community_list(req):
     return render(req, 'communities/community_list.html', {'page': page, 'form': form})
 
 
-@require_GET
-@login_required
-def community_detail(req, community_id):
-    community_id = int(community_id)
-    community = get_object_or_404(Community, pk=community_id)
-    followers_history = list(CommunityHistory.objects.filter(
-        community=community,
-    ).order_by(
-        'checked_at'
-    ).values(
-        x=F('checked_at'),
-        y=F('followers'),
-    ))
-    return render(req, 'communities/community_detail.html', {
-        'community': community,
-        'followers_history': followers_history
-    })
+class CommunityDetailView(LoginRequiredMixin, DetailView):
+    model = Community
+    pk_url_kwarg = 'community_id'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['followers_history'] = list(CommunityHistory.objects.filter(
+            community=self.object,
+        ).order_by(
+            'checked_at'
+        ).values(
+            x=F('checked_at'),
+            y=F('followers'),
+        ))
+        return ctx
 
 
 @require_GET
