@@ -2,7 +2,7 @@ from django.db.models import F
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Community, CommunityHistory, Post
+from .models import Community, Post
 from .forms import CommunitySearchForm, PostSearchForm
 
 
@@ -44,9 +44,7 @@ class CommunityDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['followers_history'] = list(CommunityHistory.objects.filter(
-            community=self.object,
-        ).order_by(
+        ctx['followers_history'] = list(self.object.communityhistory_set.order_by(
             'checked_at'
         ).values(
             x=F('checked_at'),

@@ -1,11 +1,12 @@
 from urllib.parse import urlencode
+from datetime import timedelta as TimeDelta
 
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import User
-from ..models import Community, Post
+from ..models import Community, CommunityHistory, Post
 
 
 EMAIL = 'superuser42@example42.com'
@@ -76,6 +77,20 @@ class CommunityDetailViewTest(TestCase):
         self.assertContains(resp, 'comm1')
         self.assertContains(resp, 'status1')
         self.assertContains(resp, 'desc1')
+
+    def test_view_shows_followers_trend(self):
+        dt = timezone.now()
+        CommunityHistory.objects.create(community_id=1, checked_at=dt, followers=10)
+        CommunityHistory.objects.create(community_id=1, checked_at=dt + TimeDelta(hours=1), followers=20)
+        CommunityHistory.objects.create(community_id=1, checked_at=dt + TimeDelta(hours=2), followers=30)
+        Community.objects.create(vkid=2, deactivated=False, ctype=Community.TYPE_PUBLIC_PAGE)
+        CommunityHistory.objects.create(community_id=2, checked_at=dt, followers=10)
+        self.client.login(email=EMAIL, password=PASSWORD)
+        resp = self.client.get(reverse('communities:community_detail', args=[1]))
+        self.assertEqual(
+            tuple(p['y'] for p in resp.context['followers_history']),
+            (10, 20, 30)
+        )
 
 
 class PostListViewTest(TestCase):
