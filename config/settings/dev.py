@@ -65,4 +65,6 @@ LOGGING = {
     }
 }
 
+ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 0
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

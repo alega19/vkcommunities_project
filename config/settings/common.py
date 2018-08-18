@@ -44,6 +44,9 @@ BASE_DIR = root()
 SECRET_KEY = get_secret('SECRET_KEY')
 
 
+SITE_ID = 1
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -53,6 +56,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 
     'accounts',
     'communities',
@@ -125,6 +133,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of allauth
+    'django.contrib.auth.backends.ModelBackend',
+
+    # allauth specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -146,11 +163,20 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'accounts.User'
 
-LOGIN_URL = 'accounts:login'
+LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'communities:community_list'
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
-PASSWORD_RESET_TIMEOUT_DAYS = 2  # to reset password and confirm email
+
+# allauth
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
+ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 60
+ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_URL
 
 
 # Sending emails

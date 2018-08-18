@@ -13,7 +13,7 @@
 <div class="menu">
     <a href="{% url 'communities:community_list' %}"><div class="menu__communities">COMMUNITIES</div></a>
     <a href="{% url 'communities:post_list' %}"><div class="menu__posts">POSTS</div></a>
-    <form class="menu__logout" action="{% url 'accounts:logout' %}" method="post">
+    <form class="menu__logout" action="{% url 'account_logout' %}" method="post">
         {% csrf_token %}
         <input name="submit" type="submit" value="LOGOUT">
     </form>
