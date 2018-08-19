@@ -76,3 +76,5 @@ LOGGING = {
 }
 
 STATIC_ROOT = root('static')
+
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'

@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils import timezone
 
-from .tasks import send_mail
-
 
 class UserManager(BaseUserManager):
 
@@ -43,6 +41,3 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, *args, **kwargs):
         return True
-
-    def send_email(self, subject, message, fail_silently=False):
-        return send_mail.delay(subject, message, None, [self.email], fail_silently=fail_silently)

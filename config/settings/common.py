@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'djcelery_email',
 
     'accounts',
     'communities',
@@ -196,10 +197,12 @@ CELERY_BROKER_URL = get_secret('CELERY_BROKER_URL')
 CELERY_TASK_QUEUES = [
     Queue('email', Exchange('vkcommunities', 'direct'), routing_key='email')
 ]
-CELERY_TASK_ROUTES = {
-    'accounts.tasks.send_mail': {'queue': 'email', 'routing_key': 'email'}
-}
 CELERY_TASK_TIME_LIMIT = 60
 CELERY_WORKER_CONCURRENCY = 4
 CELERY_WORKER_SEND_TASK_EVENTS = True
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+
+# djcelery_email
+CELERY_EMAIL_TASK_CONFIG = {
+    'queue': 'email',
+}

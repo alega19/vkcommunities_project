@@ -11,7 +11,7 @@ class UserTest(TestCase):
     def test_create_user(self):
         user = User.objects.create_user(self.VALID_EMAIL, self.VALID_PASSWORD)
         self.assertFalse(user.is_staff)
-        self.assertFalse(user.is_active)
+        self.assertTrue(user.is_active)
 
     def test_create_speruser(self):
         user = User.objects.create_superuser(self.VALID_EMAIL, self.VALID_PASSWORD)
