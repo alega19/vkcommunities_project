@@ -1,4 +1,0 @@
-{% autoescape off %}
-Please click on the link to recover your account,
-{{ url }}
-{% endautoescape %}

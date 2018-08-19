@@ -1,4 +1,0 @@
-{% autoescape off %}
-Please click on the link to confirm your registration,
-{{ url }}
-{% endautoescape %}
