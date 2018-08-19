@@ -1,29 +1,28 @@
-from django import forms
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin, Group
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.contrib import auth
 
 from .models import User
-from .forms import SignupForm
 
 
-class UserChangeForm(forms.ModelForm):
-
-    password = ReadOnlyPasswordHashField()
+class UserCreationForm(auth.forms.UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['email', 'is_active', 'is_staff']
+        fields = ['email']
 
-    def clean_password(self):
-        return self.initial["password"]
+
+class UserChangeForm(auth.forms.UserChangeForm):
+
+    class Meta:
+        model = User
+        fields = '__all__'
 
 
 @admin.register(User)
-class MyUserAdmin(UserAdmin):
+class UserAdmin(auth.admin.UserAdmin):
 
     form = UserChangeForm
-    add_form = SignupForm
+    add_form = UserCreationForm
 
     list_display = ('email', 'is_staff', 'is_active', 'last_login', 'joined_at')
     list_filter = ()
@@ -40,6 +39,3 @@ class MyUserAdmin(UserAdmin):
 
     ordering = ('-joined_at',)
     filter_horizontal = ()
-
-
-admin.site.unregister(Group)
