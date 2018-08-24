@@ -36,27 +36,27 @@
         </div>
     </div>
     <div class="post__footer">
-        <div class="post__indicators">
-            <div class="post__indicator">
+        <div class="post__indicators d-flex justify-content-between justify-content-sm-start">
+            <div class="post__indicator mr-sm-3">
                 <img class="post__indicator-icon" width="100%" src="{% static '/communities/images/like.svg' %}">
                 <div class="post__indicator-value">{{ post.likes|intspace }}</div>
             </div>
-            <div class="post__indicator">
+            <div class="post__indicator mr-sm-3">
                 <img class="post__indicator-icon" width="100%" src="{% static '/communities/images/share.svg' %}">
                 <div class="post__indicator-value">{{ post.shares|intspace }}</div>
             </div>
-            <div class="post__indicator">
+            <div class="post__indicator mr-sm-3">
                 <img class="post__indicator-icon" width="100%" src="{% static '/communities/images/comment.svg' %}">
                 <div class="post__indicator-value">{{ post.comments|intspace }}</div>
             </div>
             {% if post.views is not None %}
-            <div class="post__indicator">
+            <div class="post__indicator mr-sm-3">
                 <img class="post__indicator-icon" width="100%" src="{% static '/communities/images/view.svg' %}">
                 <div class="post__indicator-value">{{ post.views|intspace }}</div>
             </div>
             {% endif %}
             {% if post.post_likes_per_view is not None %}
-            <div class="post__indicator">
+            <div class="post__indicator mr-sm-3">
                 <img class="post__indicator-icon" width="100%" src="{% static '/communities/images/star.svg' %}">
                 <div class="post__indicator-value">{{ post.post_likes_per_view|multiply:1000|intformat:2|intspace }}</div>
             </div>
