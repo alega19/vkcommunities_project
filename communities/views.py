@@ -9,7 +9,7 @@ from .forms import CommunitySearchForm, PostSearchForm
 class CommunityListView(LoginRequiredMixin, ListView):
     template_name = 'communities/community_list.html'
     paginate_by = 50
-    limit = 500
+    limit = 400
     page_kwarg = 'p'
 
     def get_queryset(self):
@@ -56,7 +56,7 @@ class CommunityDetailView(LoginRequiredMixin, DetailView):
 class PostListView(LoginRequiredMixin, ListView):
     template_name = 'communities/post_list.html'
     paginate_by = 20
-    limit = 200
+    limit = 160
     page_kwarg = 'p'
 
     def get_queryset(self):
