@@ -11,13 +11,13 @@ register = template.Library()
 @register.filter
 def type2str(type_):
     if type_ == Community.TYPE_PUBLIC_PAGE:
-        return 'PP'
+        return 'Pablic page'
     elif type_ == Community.TYPE_OPEN_GROUP:
-        return 'OG'
+        return 'Open group'
     elif type_ == Community.TYPE_CLOSED_GROUP:
-        return 'CG'
+        return 'Closed group'
     elif type_ == Community.TYPE_PRIVATE_GROUP:
-        return 'PG'
+        return 'Private group'
     else:
         raise ValueError('unexpected community type = {0}'.format(type_))
 

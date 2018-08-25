@@ -4,3 +4,4 @@ celery==4.2.0
 python-memcached==1.59
 django-allauth==0.36.0
 django-celery-email==2.0.0
+django-widget-tweaks==1.4.2

@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'djcelery_email',
+    'widget_tweaks',
 
     'accounts',
     'communities',

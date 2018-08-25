@@ -1,75 +1,111 @@
-{% extends 'communities/base.html' %}
 {% load static %}
 {% load json %}
-{% load url_query %}
-{% load math %}
-{% load community_tags %}
+{% load math %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-{% block script %}
-    var followers_history = {{ followers_history | json | safe }};
-{% endblock %}
-{% block title %}{{ community.name }}{% endblock %}
-{% block menu %}
-<div class="menu">
-    <a href="{% url 'communities:community_list' %}"><div class="menu__communities">COMMUNITIES</div></a>
-    <a href="{% url 'communities:post_list' %}"><div class="menu__posts">POSTS</div></a>
-    <form class="menu__logout" action="{% url 'account_logout' %}" method="post">
-        {% csrf_token %}
-        <input name="submit" type="submit" value="LOGOUT">
-    </form>
-</div>
-{% endblock %}
-{% block communities_content %}
-<div class="comm-details__header">
-    <a href="{{ community.vk_url }}"><div class="comm-details__icon"><img width="100%" height="100%" src="{{ community.icon50url }}"></div></a>
-    <div class="comm-details__info">
-        <a href="{{ community.vk_url }}"><div class="comm-details__name">{{ community.name }}</div></a>
-        <div class="comm-details__status">{{ community.status }}</div>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+        .navbar-nav form button {
+            border-style: none;
+            background-color: inherit;
+            padding: 0;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .detail__status {
+           font-size: .8rem;
+           line-height: 1rem;
+        }
+    </style>
+
+    <script>
+        var followers_history = {{ followers_history | json | safe }};
+    </script>
+
+    <title>Verify Your E-mail Address</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-sm navbar-light bg-light mb-3">
+        <a class="navbar-brand" href="#">Mega service</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="{% url 'communities:community_list' %}">Communities</a>
+                <a class="nav-item nav-link" href="{% url 'communities:post_list' %}">Posts</a>
+            </div>
+            <div class="navbar-nav">
+                <form action="{% url 'account_logout' %}" method="post" class="nav-item nav-link">{% csrf_token %}<button type="submit">Log out</button></form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row align-items-center no-gutters mb-3">
+            <a href="{{ community.vk_url }}"><img width="50" height="50" src="{{ community.icon50url }}" class="rounded"></a>
+            <div class="col pl-3">
+                <div><a href="{{ community.vk_url }}">{{ community.name }}</a></div>
+                <div class="detail__status text-secondary">{{ community.status }}</div>
+            </div>
+        </div>
+
+        <a class="btn btn-outline-primary btn-sm mb-3" href="{% url 'communities:post_list' %}?community_id={{ community.vkid }}&sort_by=published_at&inverse=on">Find the community's posts</a>
+
+        <div class="row no-gutters mb-3">
+            <table>
+                <tr>
+                    <td>Followers:</td>
+                    <td>
+                        {% if community.followers is not None %}
+                            {{ community.followers }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Views /post:</td>
+                    <td>
+                        {% if community.views_per_post is not None %}
+                            {{ community.views_per_post|floatformat:0 }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Likes /1K views:</td>
+                    <td>
+                        {% if community.likes_per_view is not None %}
+                            {{ community.likes_per_view|multiply:1000|floatformat:0 }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        {% if community.description %}
+        <div class="border p-3 mb-3">{{ community.description }}</div>
+        {% endif %}
+
+        {% if followers_history|length >= 2 %}
+        <div>
+            <canvas id="history"></canvas>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+            <script src="{% static 'communities/scripts/community_detail.js' %}"></script>
+        </div>
+        {% endif %}
     </div>
-</div>
-<a class="comm-details__find-posts" href="{% url 'communities:post_list' %}?community_id={{ community.vkid }}&sort_by=published_at&inverse=on">Find the community's posts</a>
-<div class="comm-details__params">
-    <table>
-        <tr>
-            <td>Followers:</td>
-            <td>
-                {% if community.followers is not None %}
-                    {{ community.followers }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Views per post:</td>
-            <td>
-                {% if community.views_per_post is not None %}
-                    {{ community.views_per_post | floatformat:0 }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Likes per 1K views:</td>
-            <td>
-                {% if community.likes_per_view is not None %}
-                    {{ community.likes_per_view | multiply:1000 | floatformat:0 }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-        </tr>
-    </table>
-</div>
-{% if community.description %}
-<div class="comm-details__description">
-    <p>{{ community.description }}</p>
-</div>
-{% endif %}
-{% if followers_history|length >= 2 %}
-<canvas class="comm-details__graph" id="history"></canvas>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-<script src="{% static 'communities/scripts/community_detail.js' %}"></script>
-{% endif %}
-{% endblock %}
+</body>
+</html>
