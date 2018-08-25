@@ -1,171 +1,109 @@
+{% extends 'communities/base.html' %}
+
 {% load static %}
 {% load range %}
 {% load math %}
 {% load widget_tweaks %}
 {% load url_query %}
 {% load inthumanize %}
-{% load community_tags %}<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% load community_tags %}
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+{% block title %}{{ block.super }} - Communities{% endblock %}
 
-    <style>
-        html, body {
-            height: 100%;
-        }
-        .navbar-nav form button {
-            border-style: none;
-            background-color: inherit;
-            padding: 0;
-            color: inherit;
-            cursor: pointer;
-        }
-        .minus {
-            margin: auto .375rem;
-            width: 1rem;
-            height: 0;
-            border: 1px solid #909090;
-        }
+{% block body_content %}
+{% include 'communities/menu_snippet.html' with active='communities' %}
+<form action="{% url 'communities:community_list' %}" method="get" name="filter" class="container-fluid">
 
-        .filter__sorting-icon {
-            display: inline-block;
-            float: right;
-            width: 1em;
-            height: 1em;
-            cursor: pointer;
-        }
-
-        .filter__sorting-icon--up {
-            background: url(/static/communities/images/up.svg) no-repeat;
-        }
-
-        .filter__sorting-icon--down {
-            background: url(/static/communities/images/down.svg) no-repeat;
-        }
-
-        .filter__sorting-icon--disabled {
-            opacity: 0.4;
-        }
-
-        .table-head .col {
-            white-space: nowrap;
-        }
-    </style>
-
-    <title>Verify Your E-mail Address</title>
-</head>
-<body>
-    <nav class="navbar navbar-expand-sm navbar-light bg-light mb-3">
-        <a class="navbar-brand" href="#">Mega service</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-            <div class="navbar-nav">
-                <a class="nav-item nav-link active" href="{% url 'communities:community_list' %}">Communities</a>
-                <a class="nav-item nav-link" href="{% url 'communities:post_list' %}">Posts</a>
-            </div>
-            <div class="navbar-nav">
-                <form action="{% url 'account_logout' %}" method="post" class="nav-item nav-link">{% csrf_token %}<button type="submit">Log out</button></form>
+    <div class="row mb-3">
+        <div class="col">
+            <div class="row align-items-center no-gutters">
+                <label class="col-form-label col-sm-5">Type</label>
+                <div class="col-sm-7">{{ form.ctype|add_class:"form-control form-control-sm" }}</div>
             </div>
         </div>
-    </nav>
-
-    <form action="{% url 'communities:community_list' %}" method="get" name="filter" class="container-fluid">
-
-        <div class="row mb-3">
-            <div class="col">
-                <div class="row align-items-center no-gutters">
-                    <label class="col-form-label col-sm-5">Type</label>
-                    <div class="col-sm-7">{{ form.ctype|add_class:"form-control form-control-sm" }}</div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="row align-items-center no-gutters">
-                    <label class="col-form-label col-sm-5">Verified</label>
-                    <div class="col-sm-7">{{ form.verified|add_class:"form-control form-control-sm" }}</div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="row align-items-center no-gutters">
-                    <label class="col-form-label col-sm-5">Age limit</label>
-                    <div class="col-sm-7">{{ form.age_limit|add_class:"form-control form-control-sm" }}</div>
-                </div>
+        <div class="col">
+            <div class="row align-items-center no-gutters">
+                <label class="col-form-label col-sm-5">Verified</label>
+                <div class="col-sm-7">{{ form.verified|add_class:"form-control form-control-sm" }}</div>
             </div>
         </div>
+        <div class="col">
+            <div class="row align-items-center no-gutters">
+                <label class="text-nowrap col-form-label col-sm-5">Age limit</label>
+                <div class="col-sm-7">{{ form.age_limit|add_class:"form-control form-control-sm" }}</div>
+            </div>
+        </div>
+    </div>
 
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <div class="row align-items-center no-gutters">
-                    <label class="col-11 col-sm-3 col-md-11 col-form-label">Followers</label>
-                    <div id="followers-range-widget" class="col-1 order-sm-1 order-md-0">
-                        <span class="filter__sorting-icon"></span>
-                    </div>
-                    <div class="col-12 col-sm-8 col-md-12">
-                        <div class="row no-gutters">
-                            <div class="col">{{ form.followers_min|add_class:"form-control form-control-sm" }}</div>
-                            <span class="minus"></span>
-                            <div class="col">{{ form.followers_max|add_class:"form-control form-control-sm" }}</div>
-                        </div>
-                    </div>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="row align-items-center no-gutters">
+                <label class="col-11 col-sm-3 col-md-11 col-form-label">Followers</label>
+                <div id="followers-range-widget" class="col-1 order-sm-1 order-md-0">
+                    <span class="filter__sorting-icon"></span>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="row align-items-center no-gutters">
-                    <label class="col-11 col-sm-3 col-md-11 col-form-label">Views (/post)</label>
-                    <div id="views-range-widget" class="col-1 order-sm-1 order-md-0">
-                        <span class="filter__sorting-icon"></span>
-                    </div>
-                    <div class="col-12 col-sm-8 col-md-12">
-                        <div class="row no-gutters">
-                            <div class="col">{{ form.views_per_post_min|add_class:"form-control form-control-sm" }}</div>
-                            <span class="minus"></span>
-                            <div class="col">{{ form.views_per_post_max|add_class:"form-control form-control-sm" }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="row align-items-center no-gutters">
-                    <label class="col-11 col-sm-3 col-md-11 col-form-label">Likes (/1K views)</label>
-                    <div id="likes-range-widget" class="col-1 order-sm-1 order-md-0">
-                        <span class="filter__sorting-icon"></span>
-                    </div>
-                    <div class="col-12 col-sm-8 col-md-12">
-                        <div class="row no-gutters">
-                            <div class="col">{{ form.likes_per_view_min|add_class:"form-control form-control-sm" }}</div>
-                            <span class="minus"></span>
-                            <div class="col">{{ form.likes_per_view_max|add_class:"form-control form-control-sm" }}</div>
-                        </div>
+                <div class="col-12 col-sm-8 col-md-12">
+                    <div class="row no-gutters">
+                        <div class="col">{{ form.followers_min|add_class:"form-control form-control-sm" }}</div>
+                        <span class="minus"></span>
+                        <div class="col">{{ form.followers_max|add_class:"form-control form-control-sm" }}</div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="d-none">{{ form.sort_by }}</div>
-        <div class="d-none">{{ form.inverse }}</div>
-
-        <div class="row justify-content-center justify-content-sm-between">
-            <div class="col-8 col-sm-3 mb-3">
-                <button type="submit" class="btn btn-primary btn-block">Search</button>
+        <div class="col-md-4">
+            <div class="row align-items-center no-gutters">
+                <label class="text-nowrap col-11 col-sm-3 col-md-11 col-form-label">Views (/post)</label>
+                <div id="views-range-widget" class="col-1 order-sm-1 order-md-0">
+                    <span class="filter__sorting-icon"></span>
+                </div>
+                <div class="col-12 col-sm-8 col-md-12">
+                    <div class="row no-gutters">
+                        <div class="col">{{ form.views_per_post_min|add_class:"form-control form-control-sm" }}</div>
+                        <span class="minus"></span>
+                        <div class="col">{{ form.views_per_post_max|add_class:"form-control form-control-sm" }}</div>
+                    </div>
+                </div>
             </div>
-            <nav class="col-12 col-sm-9">
-                <ul class="pagination justify-content-center justify-content-sm-end">
-                    {% for n in page_obj.paginator.num_pages|range %}
-                        {% if n|add:1 == page_obj.number %}
-                    <li class="page-item disabled"><a class="page-link" href="#">{{ n|add:1 }}</a></li>
-                        {% else %}
-                    <li class="page-item"><a class="page-link" href="{% url 'communities:community_list' %}?{% url_query p=n|add:1 %}">{{ n|add:1 }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            </nav>
         </div>
+        <div class="col-md-4">
+            <div class="row align-items-center no-gutters">
+                <label class="text-nowrap col-11 col-sm-3 col-md-11 col-form-label">Likes (/1K views)</label>
+                <div id="likes-range-widget" class="col-1 order-sm-1 order-md-0">
+                    <span class="filter__sorting-icon"></span>
+                </div>
+                <div class="col-12 col-sm-8 col-md-12">
+                    <div class="row no-gutters">
+                        <div class="col">{{ form.likes_per_view_min|add_class:"form-control form-control-sm" }}</div>
+                        <span class="minus"></span>
+                        <div class="col">{{ form.likes_per_view_max|add_class:"form-control form-control-sm" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    </form>
+    <div class="d-none">{{ form.sort_by }}</div>
+    <div class="d-none">{{ form.inverse }}</div>
+
+    <div class="row justify-content-center justify-content-sm-between">
+        <div class="col-8 col-sm-3 mb-3">
+            <button type="submit" class="btn btn-primary btn-block">Search</button>
+        </div>
+        <nav class="col-12 col-sm-9">
+            <ul class="pagination justify-content-center justify-content-sm-end">
+                {% for n in page_obj.paginator.num_pages|range %}
+                    {% if n|add:1 == page_obj.number %}
+                <li class="page-item disabled"><a class="page-link" href="#">{{ n|add:1 }}</a></li>
+                    {% else %}
+                <li class="page-item"><a class="page-link" href="{% url 'communities:community_list' %}?{% url_query p=n|add:1 %}">{{ n|add:1 }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+    </div>
+
+</form>
 
 <div class="container-fluid">
     <div class="d-none d-sm-flex table-head border-bottom mb-3 row no-gutters">
@@ -202,11 +140,9 @@
     </div>
     {% endfor %}
 </div>
+{% endblock %}
 
-<script src="{% static 'communities/scripts/community_list.js' %}"></script>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-</body>
-</html>
+{% block body_scripts %}
+    {{ block.super }}
+    <script src="{% static 'communities/scripts/community_list.js' %}"></script>
+{% endblock %}

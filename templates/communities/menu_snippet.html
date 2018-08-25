@@ -1,0 +1,15 @@
+<nav class="navbar navbar-expand-sm navbar-light bg-light mb-3">
+    <a class="navbar-brand" href="#">Mega service</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link{% if active == 'communities' %} active{% endif %}" href="{% url 'communities:community_list' %}">Communities</a>
+            <a class="nav-item nav-link{% if active == 'posts' %} active{% endif %}" href="{% url 'communities:post_list' %}">Posts</a>
+        </div>
+        <div class="navbar-nav">
+            <form action="{% url 'account_logout' %}" method="post" class="nav-item nav-link">{% csrf_token %}<button type="submit">Log out</button></form>
+        </div>
+    </div>
+</nav>
