@@ -1,0 +1,16 @@
+/* accounts app */
+html, body {
+    height: 100%;
+}
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.single-form {
+    max-width: 300px;
+    width: 100%;
+}
+.single-form .form-check {
+    text-align: center;
+}
