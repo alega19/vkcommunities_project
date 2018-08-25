@@ -6,10 +6,11 @@
 
 {% if confirmation %}
 
-<div class="alert alert-primary">Please confirm your e-mail address.</div>
-<form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+<form action="{% url 'account_confirm_email' confirmation.key %}" method="post" class="single-form">
     {% csrf_token %}
-    <button type="submit">Confirm e-mail address</button>
+
+    <div class="alert alert-primary">Please confirm your e-mail address.</div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">Confirm e-mail address</button>
 </form>
 
 {% else %}
