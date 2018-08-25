@@ -137,8 +137,11 @@
     {{ block.super }}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
     <script>
-        $.fn.datepicker.defaults.format = "yyyy-mm-dd";
-        $('.datepicker input').datepicker();
+        $('.datepicker input').datepicker({
+            format: "yyyy-mm-dd",
+            weekStart: 1,
+            autoclose: true
+        });
         $('.datepicker button').click(function(){
             $(this).parent().parent().find('input')[0].value = '';
         });
