@@ -10,7 +10,7 @@ urlpatterns = [
         name='community_list',
     ),
     url(
-        r'^(?P<community_id>[0-9]+)$',
+        r'^(?P<pk>[0-9]+)$',
         views.CommunityDetailView.as_view(),
         name='community_detail',
     ),

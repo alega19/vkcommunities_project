@@ -40,7 +40,6 @@ class CommunityListView(LoginRequiredMixin, ListView):
 
 class CommunityDetailView(LoginRequiredMixin, DetailView):
     model = Community
-    pk_url_kwarg = 'community_id'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
