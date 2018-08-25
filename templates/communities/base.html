@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
-{% block content %}
-    {% block menu %}{% endblock %}
-    {% block communities_content %}{% endblock %}
+
+{% load static %}
+
+{% block style_links %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'communities/styles/main.css' %}">
 {% endblock %}
